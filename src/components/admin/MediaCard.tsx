@@ -4,16 +4,7 @@
 
 import { useState, memo } from 'react';
 import { motion } from 'framer-motion';
-import {
-  MoreVertical,
-  Copy,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  FolderOpen,
-  Check,
-  Eye,
-} from 'lucide-react';
+import { MoveVertical as MoreVertical, Copy, ExternalLink, Pencil, Trash2, FolderOpen, Check, Eye } from 'lucide-react';
 import type { MediaFile } from '../../services/media.service';
 
 interface MediaCardProps {
