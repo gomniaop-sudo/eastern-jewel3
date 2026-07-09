@@ -1,0 +1,25 @@
+# Robots.txt for Eastern Jewel
+# https://easternjewel.com
+
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://easternjewel.com/sitemap.xml
+
+# Disallow admin and private paths
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+# Allow search engines to crawl all content
+Allow: /gallery
+Allow: /about
+Allow: /premium
+Allow: /journal
+Allow: /contact
+Allow: /privacy
+Allow: /terms
+Allow: /cookies
+Allow: /dmca
+Allow: /2257

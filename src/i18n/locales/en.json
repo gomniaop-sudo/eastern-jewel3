@@ -1,0 +1,106 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "gallery": "Gallery",
+    "premium": "Premium",
+    "journal": "Journal",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Eastern Jewel",
+    "subtitle": "An Exclusive Journey Into Elegance",
+    "description": "Discover a world where sophistication meets allure. Eastern Jewel invites you to experience the extraordinary through captivating visuals and exclusive content crafted for the discerning connoisseur.",
+    "cta": "Enter the Gallery",
+    "cta_secondary": "Learn More"
+  },
+  "about": {
+    "title": "The Essence of Eastern Jewel",
+    "subtitle": "Where Beauty Meets Artistry",
+    "description": "Eastern Jewel represents the pinnacle of refined aesthetics. Our philosophy centers on celebrating the human form as art, capturing moments of grace, mystery, and timeless beauty. Each image tells a story of elegance, each moment frozen in perfect harmony.",
+    "philosophy_title": "Our Philosophy",
+    "philosophy": "We believe in the power of visual storytelling. Every photograph is carefully curated to embody sophistication, mystery, and the timeless allure of the East. Our work transcends mere imagery to become an experience.",
+    "stats": {
+      "years": "Years of Excellence",
+      "images": "Curated Images",
+      "members": "Exclusive Members",
+      "satisfaction": "Satisfaction Rate"
+    }
+  },
+  "gallery": {
+    "title": "Gallery",
+    "subtitle": "A Curated Collection of Elegance",
+    "view_more": "View Collection",
+    "categories": {
+      "all": "All",
+      "portraits": "Portraits",
+      "artistic": "Artistic",
+      "lifestyle": "Lifestyle",
+      "exclusive": "Exclusive"
+    }
+  },
+  "premium": {
+    "title": "Premium Access",
+    "subtitle": "Unlock Exclusive Content",
+    "description": "Elevate your experience with premium membership. Gain access to exclusive galleries, behind-the-scenes content, and member-only features.",
+    "features": {
+      "exclusive": "Exclusive Galleries",
+      "hd": "HD Content",
+      "updates": "Priority Updates",
+      "support": "Premium Support"
+    },
+    "cta": "Join Premium",
+    "learn_more": "Learn More"
+  },
+  "journal": {
+    "title": "Journal",
+    "subtitle": "Stories Behind the Lens",
+    "read_more": "Read More",
+    "latest": "Latest Entries"
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "Get in Touch",
+    "description": "Have questions or want to collaborate? We'd love to hear from you.",
+    "form": {
+      "name": "Your Name",
+      "email": "Your Email",
+      "subject": "Subject",
+      "message": "Your Message",
+      "submit": "Send Message",
+      "success": "Message sent successfully!",
+      "error": "Please fill in all fields."
+    },
+    "info": {
+      "email": "Email",
+      "response": "Response Time"
+    }
+  },
+  "newsletter": {
+    "title": "Stay Connected",
+    "description": "Subscribe to receive exclusive updates, new releases, and curated content directly to your inbox.",
+    "placeholder": "Enter your email",
+    "submit": "Subscribe",
+    "success": "Thank you for subscribing!",
+    "privacy": "We respect your privacy and will never share your information."
+  },
+  "footer": {
+    "tagline": "Where Elegance Meets Artistry",
+    "navigation": "Navigation",
+    "legal": "Legal",
+    "connect": "Connect",
+    "copyright": "© {{year}} Eastern Jewel. All rights reserved."
+  },
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "cookies": "Cookie Policy",
+    "dmca": "DMCA",
+    "compliance": "2257 Compliance"
+  },
+  "accessibility": {
+    "skip": "Skip to main content",
+    "language": "Language",
+    "toggle_menu": "Toggle menu"
+  }
+}
