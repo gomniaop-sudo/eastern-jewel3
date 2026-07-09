@@ -21,3 +21,5 @@ export type {
   UploadOptions,
   ListOptions,
 } from './media.service';
+export { searchService } from './search.service';
+export type { SearchResult, Suggestion, SearchFilters, SearchOptions } from './search.service';

@@ -1,12 +1,12 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, X, ChevronLeft, ChevronRight, Loader as Loader2, CircleAlert as AlertCircle, ImageOff } from 'lucide-react';
+import { Lock, X, ChevronLeft, ChevronRight, Loader as Loader2, CircleAlert as AlertCircle, ImageOff, Search as SearchIcon } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { SEO, Container, Section, SectionHeading } from '../components/ui';
+import { PageSEO, Container, Section, SectionHeading } from '../components/ui';
+import { SearchResults } from '../components/search';
 import { galleryItems, galleryCategories, type GalleryItem } from '../content';
 import { galleryService, galleryCategoriesService, type GalleryItemWithCategory, type CategoryRow } from '../services';
 import { isSupabaseConfigured } from '../lib';
-import { pageSeoConfig } from '../config';
 
 type GalleryDataItem = GalleryItemWithCategory | GalleryItem;
 
@@ -14,6 +14,8 @@ const Gallery = () => {
   const { t } = useTranslation();
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedImage, setSelectedImage] = useState<GalleryDataItem | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
 
   const [items, setItems] = useState<GalleryDataItem[]>([]);
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
@@ -87,21 +89,40 @@ const Gallery = () => {
         return category === activeCategory;
       });
 
+  const searchFilteredItems = searchQuery
+    ? filteredItems.filter((item) => {
+        const title = item.title.toLowerCase();
+        const description = ('description' in item && item.description ? item.description : '').toLowerCase();
+        const query = searchQuery.toLowerCase();
+        return title.includes(query) || description.includes(query);
+      })
+    : filteredItems;
+
   const currentIndex = selectedImage
-    ? filteredItems.findIndex((item) => item.id === selectedImage.id)
+    ? searchFilteredItems.findIndex((item) => item.id === selectedImage.id)
     : -1;
 
   const handlePrevious = () => {
     if (currentIndex > 0) {
-      setSelectedImage(filteredItems[currentIndex - 1]);
+      setSelectedImage(searchFilteredItems[currentIndex - 1]);
     }
   };
 
   const handleNext = () => {
-    if (currentIndex < filteredItems.length - 1) {
-      setSelectedImage(filteredItems[currentIndex + 1]);
+    if (currentIndex < searchFilteredItems.length - 1) {
+      setSelectedImage(searchFilteredItems[currentIndex + 1]);
     }
   };
+
+  const handleSearch = useCallback((query: string) => {
+    setSearchQuery(query);
+    setIsSearching(!!query);
+  }, []);
+
+  const handleClearSearch = useCallback(() => {
+    setSearchQuery('');
+    setIsSearching(false);
+  }, []);
 
   const getItemImage = (item: GalleryDataItem): string => {
     if ('image' in item) return item.image;
@@ -126,103 +147,134 @@ const Gallery = () => {
 
   return (
     <>
-      <SEO
-        title={pageSeoConfig.gallery.title}
-        description={pageSeoConfig.gallery.description}
-      />
+      <PageSEO page="gallery" />
 
       <Section className="pt-24">
         <Container>
           <SectionHeading titleKey="gallery.title" subtitleKey="gallery.subtitle" />
 
-          {loading && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <Loader2 className="w-10 h-10 text-gold-500 animate-spin mb-4" />
-              <p className="text-gray-400">{t('common.loading')}</p>
+          <div className="mb-8 max-w-2xl mx-auto">
+            <div className="relative">
+              <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => handleSearch(e.target.value)}
+                placeholder={t('gallery.search', 'Search gallery...')}
+                aria-label="Search gallery"
+                className="w-full pl-12 pr-4 py-3 bg-luxury-light/10 border border-luxury-light/20 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={handleClearSearch}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-luxury-light/20 rounded-sm text-gray-400 hover:text-white transition-colors"
+                  aria-label="Clear search"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
-          )}
+          </div>
 
-          {error && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <AlertCircle className="w-10 h-10 text-red-500 mb-4" />
-              <p className="text-red-400 mb-2">{error}</p>
-              <button
-                onClick={() => window.location.reload()}
-                className="text-gold-500 hover:text-gold-400 underline"
-              >
-                {t('common.retry')}
-              </button>
-            </div>
-          )}
-
-          {!loading && !error && items.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-20">
-              <ImageOff className="w-10 h-10 text-gray-500 mb-4" />
-              <p className="text-gray-400">{t('gallery.empty')}</p>
-            </div>
-          )}
-
-          {!loading && !error && items.length > 0 && (
+          {isSearching ? (
+            <SearchResults
+              query={searchQuery}
+              type="gallery"
+              categories={categories.map((c) => c.id)}
+              onClear={handleClearSearch}
+            />
+          ) : (
             <>
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="flex flex-wrap justify-center gap-2 md:gap-4 mb-12"
-              >
-                {categories.map((category) => (
+              {loading && (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <Loader2 className="w-10 h-10 text-gold-500 animate-spin mb-4" />
+                  <p className="text-gray-400">{t('common.loading')}</p>
+                </div>
+              )}
+
+              {error && (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <AlertCircle className="w-10 h-10 text-red-500 mb-4" />
+                  <p className="text-red-400 mb-2">{error}</p>
                   <button
-                    key={category.id}
-                    onClick={() => setActiveCategory(category.id)}
-                    className={`px-4 py-2 text-sm font-medium rounded-sm transition-all duration-300 ${
-                      activeCategory === category.id
-                        ? 'bg-gold-500 text-luxury-black'
-                        : 'bg-luxury-light text-gray-400 hover:text-white hover:bg-luxury-gray'
-                    }`}
+                    onClick={() => window.location.reload()}
+                    className="text-gold-500 hover:text-gold-400 underline"
                   >
-                    {category.label}
+                    {t('common.retry')}
                   </button>
-                ))}
-              </motion.div>
+                </div>
+              )}
 
-              <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
-                <AnimatePresence mode="popLayout">
-                  {filteredItems.map((item, index) => (
-                    <motion.div
-                      key={item.id}
-                      layout
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.9 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                      onClick={() => setSelectedImage(item)}
-                      className="group relative aspect-[3/4] overflow-hidden rounded-sm cursor-pointer"
-                    >
-                      <img
-                        src={getItemImage(item)}
-                        alt={getItemTitle(item)}
-                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                        loading="lazy"
-                      />
+              {!loading && !error && items.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-20">
+                  <ImageOff className="w-10 h-10 text-gray-500 mb-4" />
+                  <p className="text-gray-400">{t('gallery.empty')}</p>
+                </div>
+              )}
 
-                      <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              {!loading && !error && items.length > 0 && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-wrap justify-center gap-2 md:gap-4 mb-12"
+                  >
+                    {categories.map((category) => (
+                      <button
+                        key={category.id}
+                        onClick={() => setActiveCategory(category.id)}
+                        className={`px-4 py-2 text-sm font-medium rounded-sm transition-all duration-300 ${
+                          activeCategory === category.id
+                            ? 'bg-gold-500 text-luxury-black'
+                            : 'bg-luxury-light text-gray-400 hover:text-white hover:bg-luxury-gray'
+                        }`}
+                      >
+                        {category.label}
+                      </button>
+                    ))}
+                  </motion.div>
 
-                      {getItemIsPremium(item) && (
-                        <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-gold-500 text-xs">
-                          <Lock className="w-3 h-3" />
-                          <span>Premium</span>
-                        </div>
-                      )}
+                  <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                    <AnimatePresence mode="popLayout">
+                      {searchFilteredItems.map((item, index) => (
+                        <motion.div
+                          key={item.id}
+                          layout
+                          initial={{ opacity: 0, scale: 0.9 }}
+                          animate={{ opacity: 1, scale: 1 }}
+                          exit={{ opacity: 0, scale: 0.9 }}
+                          transition={{ duration: 0.4, delay: index * 0.05 }}
+                          onClick={() => setSelectedImage(item)}
+                          className="group relative aspect-[3/4] overflow-hidden rounded-sm cursor-pointer"
+                        >
+                          <img
+                            src={getItemImage(item)}
+                            alt={getItemTitle(item)}
+                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                            loading="lazy"
+                          />
 
-                      <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
-                        <h3 className="text-white text-lg font-display mb-1">{getItemTitle(item)}</h3>
-                        <p className="text-gray-400 text-sm">{getItemDescription(item)}</p>
-                      </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
-                      <div className="absolute inset-0 border border-gold-500/0 group-hover:border-gold-500/50 rounded-sm transition-all duration-500" />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
+                          {getItemIsPremium(item) && (
+                            <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-gold-500 text-xs">
+                              <Lock className="w-3 h-3" />
+                              <span>Premium</span>
+                            </div>
+                          )}
+
+                          <div className="absolute inset-0 flex flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                            <h3 className="text-white text-lg font-display mb-1">{getItemTitle(item)}</h3>
+                            <p className="text-gray-400 text-sm">{getItemDescription(item)}</p>
+                          </div>
+
+                          <div className="absolute inset-0 border border-gold-500/0 group-hover:border-gold-500/50 rounded-sm transition-all duration-500" />
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </motion.div>
+                </>
+              )}
             </>
           )}
         </Container>
@@ -258,7 +310,7 @@ const Gallery = () => {
               </button>
             )}
 
-            {currentIndex < filteredItems.length - 1 && (
+            {currentIndex < searchFilteredItems.length - 1 && (
               <button
                 onClick={(e) => {
                   e.stopPropagation();

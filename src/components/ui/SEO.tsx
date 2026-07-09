@@ -1,6 +1,6 @@
 import { Helmet } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
-import { seoConfig, siteConfig } from '../../config';
+import { seoConfig, siteConfig, pageSeoConfig } from '../../config';
 
 interface SEOProps {
   title?: string;
@@ -10,6 +10,10 @@ interface SEOProps {
   url?: string;
   type?: string;
   jsonLd?: object;
+}
+
+export interface PageSEOProps {
+  page: keyof typeof pageSeoConfig;
 }
 
 const SEO = ({
@@ -45,5 +49,15 @@ const SEO = ({
     </Helmet>
   );
 };
+
+export function PageSEO({ page }: PageSEOProps) {
+  const pageConfig = pageSeoConfig[page];
+  return (
+    <SEO
+      title={pageConfig.title}
+      description={pageConfig.description}
+    />
+  );
+}
 
 export default SEO;

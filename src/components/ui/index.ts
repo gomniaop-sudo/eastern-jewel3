@@ -6,3 +6,5 @@ export { default as SectionHeading } from './SectionHeading';
 export { default as Container } from './Container';
 export { default as Section } from './Section';
 export { default as SEO } from './SEO';
+export { PageSEO } from './SEO';
+export type { PageSEOProps } from './SEO';
