@@ -1,12 +1,14 @@
 /**
  * Smart Search Input with Suggestions and Keyboard Navigation
+ * Optimized with memoization and proper cleanup
  */
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, memo } from 'react';
 import { Search, X, Clock, TrendingUp, Image as ImageIcon, FileText, Loader as Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { searchService, type Suggestion } from '../../services/search.service';
+import { logger } from '../../utils/logger';
 
 interface SearchInputProps {
   placeholder?: string;
@@ -24,7 +26,7 @@ const typeIcons = {
   journal: FileText,
 };
 
-export function SearchInput({
+function SearchInputComponent({
   placeholder = 'Search...',
   autoFocus = false,
   onSearch,
@@ -39,6 +41,17 @@ export function SearchInput({
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+    };
+  }, []);
 
   const debouncedFetchSuggestions = useCallback((searchQuery: string) => {
     if (debounceRef.current) {
@@ -49,11 +62,15 @@ export function SearchInput({
       setLoading(true);
       try {
         const results = await searchService.getSuggestions(searchQuery);
-        setSuggestions(results);
+        if (isMountedRef.current) {
+          setSuggestions(results);
+        }
       } catch (err) {
-        console.error('Error fetching suggestions:', err);
+        logger.error('Error fetching suggestions', { error: String(err) });
       } finally {
-        setLoading(false);
+        if (isMountedRef.current) {
+          setLoading(false);
+        }
       }
     }, DEBOUNCE_MS);
   }, []);
@@ -257,4 +274,5 @@ export function SearchInput({
   );
 }
 
+export const SearchInput = memo(SearchInputComponent);
 export default SearchInput;

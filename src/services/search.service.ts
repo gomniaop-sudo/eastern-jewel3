@@ -1,14 +1,54 @@
 /**
  * Advanced Search Service
  * Unified search across Gallery and Journal with Arabic/English support
+ * Includes caching and memoization for performance
  */
 
 import { galleryService } from './gallery.service';
 import { journalService } from './journal.service';
+import { logger } from '../utils/logger';
 
 const RECENT_SEARCHES_KEY = 'easternjewel_recent_searches';
 const MAX_RECENT_SEARCHES = 10;
 const MAX_SUGGESTIONS = 8;
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
+// Simple in-memory cache
+const searchCache = new Map<string, { results: SearchResult[]; timestamp: number }>();
+
+function getCached(key: string): SearchResult[] | null {
+  const cached = searchCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.results;
+  }
+  searchCache.delete(key);
+  return null;
+}
+
+function setCache(key: string, results: SearchResult[]): void {
+  if (searchCache.size > 50) {
+    const oldestKey = searchCache.keys().next().value;
+    if (oldestKey) searchCache.delete(oldestKey);
+  }
+  searchCache.set(key, { results, timestamp: Date.now() });
+}
+
+// Memoization for normalize text
+const normalizeCache = new Map<string, string>();
+function memoizedNormalizeText(text: string): string {
+  const cached = normalizeCache.get(text);
+  if (cached) return cached;
+  const normalized = normalizeArabic(text)
+    .toLowerCase()
+    .replace(/[^\w\s\u0600-\u06FF]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (normalizeCache.size > 100) {
+    normalizeCache.clear();
+  }
+  normalizeCache.set(text, normalized);
+  return normalized;
+}
 
 export interface SearchResult {
   id: string;
@@ -68,13 +108,7 @@ function normalizeArabic(text: string): string {
     .replace(/[ؤئ]/g, 'ء');
 }
 
-function normalizeText(text: string): string {
-  return normalizeArabic(text)
-    .toLowerCase()
-    .replace(/[^\w\s\u0600-\u06FF]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+const normalizeText = memoizedNormalizeText;
 
 function calculateScore(
   item: { title: string; titleAr?: string; description?: string; isFeatured?: boolean; createdAt: string },
@@ -179,8 +213,16 @@ function matchAndScore(
 
 export const searchService = {
   async searchGallery(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
-    const items = await galleryService.getAll({ isActive: true, ...filters });
-    const results: SearchResult[] = [];
+    const cacheKey = `gallery:${query}:${JSON.stringify(filters || {})}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      logger.debug('searchService: Cache hit for gallery search', { query });
+      return cached;
+    }
+
+    try {
+      const items = await galleryService.getAll({ isActive: true, ...filters });
+      const results: SearchResult[] = [];
 
     for (const item of items) {
       const category = item.categories?.label_en || item.categories?.slug || '';
@@ -218,12 +260,26 @@ export const searchService = {
       }
     }
 
-    return results.sort((a, b) => b.score - a.score);
+    const sorted = results.sort((a, b) => b.score - a.score);
+    setCache(cacheKey, sorted);
+    return sorted;
+    } catch (error) {
+      logger.error('searchService: Gallery search failed', { error: String(error) });
+      return [];
+    }
   },
 
   async searchJournal(query: string, filters?: SearchFilters): Promise<SearchResult[]> {
-    const items = await journalService.getAll({ isPublished: true, ...filters });
-    const results: SearchResult[] = [];
+    const cacheKey = `journal:${query}:${JSON.stringify(filters || {})}`;
+    const cached = getCached(cacheKey);
+    if (cached) {
+      logger.debug('searchService: Cache hit for journal search', { query });
+      return cached;
+    }
+
+    try {
+      const items = await journalService.getAll({ isPublished: true, ...filters });
+      const results: SearchResult[] = [];
 
     for (const item of items) {
       const { matches, score, matchedFields } = matchAndScore(
@@ -264,7 +320,13 @@ export const searchService = {
       }
     }
 
-    return results.sort((a, b) => b.score - a.score);
+    const sorted = results.sort((a, b) => b.score - a.score);
+    setCache(cacheKey, sorted);
+    return sorted;
+    } catch (error) {
+      logger.error('searchService: Journal search failed', { error: String(error) });
+      return [];
+    }
   },
 
   async search(options: SearchOptions): Promise<SearchResult[]> {
@@ -399,6 +461,12 @@ export const searchService = {
     } catch {
       // Ignore errors
     }
+  },
+
+  clearCache(): void {
+    searchCache.clear();
+    normalizeCache.clear();
+    logger.debug('searchService: Cache cleared');
   },
 
   highlightMatch(text: string, query: string): string {
