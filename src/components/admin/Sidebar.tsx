@@ -3,18 +3,7 @@
  */
 
 import { NavLink, useNavigate } from 'react-router-dom';
-import {
-  LayoutDashboard,
-  Image,
-  FileText,
-  Mail,
-  Users,
-  Settings,
-  LogOut,
-  ChevronLeft,
-  User,
-  ImageIcon,
-} from 'lucide-react';
+import { LayoutDashboard, Image, FileText, Mail, Users, Settings, LogOut, ChevronLeft, User, Image as ImageIcon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { type Permission, ROUTE_PERMISSIONS } from '../../lib/rbac';
 

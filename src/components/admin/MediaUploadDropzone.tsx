@@ -4,7 +4,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, X, FileImage, AlertCircle, CheckCircle } from 'lucide-react';
+import { Upload, X, FileImage, CircleAlert as AlertCircle, CircleCheck as CheckCircle } from 'lucide-react';
 
 interface UploadQueueItem {
   id: string;

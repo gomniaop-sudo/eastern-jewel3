@@ -4,22 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Upload,
-  RefreshCw,
-  Search,
-  FolderOpen,
-  ArrowUpDown,
-  Grid,
-  List,
-  Trash2,
-  Copy,
-  Move,
-  Check,
-  X,
-  Folder,
-  Image as ImageIcon,
-} from 'lucide-react';
+import { Upload, RefreshCw, Search, FolderOpen, ArrowUpDown, Grid2x2 as Grid, List, Trash2, Copy, Move, Check, X, Folder, Image as ImageIcon } from 'lucide-react';
 import { MediaCard, MediaPreview, MediaUploadDropzone, Notification, ConfirmDialog, EmptyState } from '../../components/admin';
 import { useMedia } from '../../hooks';
 import type { MediaFile, MediaFolder } from '../../services/media.service';
