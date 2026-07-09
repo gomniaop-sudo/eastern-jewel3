@@ -3,9 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  User, Mail, Lock, Shield, Calendar, Clock, KeyRound, AlertCircle, Save, RotateCcw, ExternalLink
-} from 'lucide-react';
+import { User, Mail, Lock, Shield, Calendar, Clock, KeyRound, CircleAlert as AlertCircle, Save, RotateCcw, ExternalLink } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { authService } from '../../services/auth.service';
 import { Notification } from '../../components/admin';
