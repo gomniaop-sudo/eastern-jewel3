@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, X, ChevronLeft, ChevronRight, Loader2, AlertCircle, ImageOff } from 'lucide-react';
+import { Lock, X, ChevronLeft, ChevronRight, Loader as Loader2, CircleAlert as AlertCircle, ImageOff } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SEO, Container, Section, SectionHeading } from '../components/ui';
 import { galleryItems, galleryCategories, type GalleryItem } from '../content';

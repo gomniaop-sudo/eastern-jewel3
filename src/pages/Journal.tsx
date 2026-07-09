@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Calendar, ArrowRight, Loader2, AlertCircle, FileText } from 'lucide-react';
+import { Calendar, ArrowRight, Loader as Loader2, CircleAlert as AlertCircle, FileText } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { SEO, Container, Section, SectionHeading, Card } from '../components/ui';
 import { journalEntries, type JournalEntry } from '../content';
