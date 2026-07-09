@@ -8,3 +8,4 @@ export { ConfirmDialog } from './ConfirmDialog';
 export { Notification } from './Notification';
 export { GalleryForm } from './GalleryForm';
 export { JournalForm } from './JournalForm';
+export { PermissionButton, PermissionGuard } from './PermissionButton';

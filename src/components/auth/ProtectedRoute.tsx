@@ -1,19 +1,34 @@
 /**
- * Protected Route Component - Production Grade
+ * Protected Route Component - Production Grade with RBAC
  */
 
 import { Navigate, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Shield } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { type Permission, type Role, ROUTE_PERMISSIONS } from '../../lib/rbac';
+import { UnauthorizedPage } from './UnauthorizedPage';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
   redirectTo?: string;
+  permission?: Permission;
+  permissions?: Permission[];
+  requireAll?: boolean;
+  role?: Role;
+  minimumRole?: Role;
 }
 
-export function ProtectedRoute({ children, redirectTo = '/' }: ProtectedRouteProps) {
-  const { loading, initializing, isAuthenticated } = useAuth();
+export function ProtectedRoute({
+  children,
+  redirectTo = '/',
+  permission,
+  permissions,
+  requireAll = false,
+  role,
+  minimumRole,
+}: ProtectedRouteProps) {
+  const { loading, initializing, isAuthenticated, hasPermission, hasAnyPermission, hasAllPermissions, hasRole, isAtLeast } = useAuth();
   const location = useLocation();
 
   if (initializing || loading) {
@@ -56,6 +71,28 @@ export function ProtectedRoute({ children, redirectTo = '/' }: ProtectedRoutePro
   if (!isAuthenticated) {
     const redirectPath = location.pathname !== '/' ? `?redirect=${encodeURIComponent(location.pathname)}` : '';
     return <Navigate to={`${redirectTo}${redirectPath}`} replace state={{ from: location }} />;
+  }
+
+  const routePermission = ROUTE_PERMISSIONS[location.pathname];
+  const requiredPermission = permission || routePermission;
+
+  if (requiredPermission && !hasPermission(requiredPermission)) {
+    return <UnauthorizedPage />;
+  }
+
+  if (permissions && permissions.length > 0) {
+    const hasAccess = requireAll ? hasAllPermissions(permissions) : hasAnyPermission(permissions);
+    if (!hasAccess) {
+      return <UnauthorizedPage />;
+    }
+  }
+
+  if (role && !hasRole(role)) {
+    return <UnauthorizedPage />;
+  }
+
+  if (minimumRole && !isAtLeast(minimumRole)) {
+    return <UnauthorizedPage />;
   }
 
   return <>{children}</>;

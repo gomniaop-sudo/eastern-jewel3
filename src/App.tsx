@@ -4,7 +4,7 @@ import { HelmetProvider } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Layout } from './components/layout';
 import { AdminLayout } from './components/admin';
-import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { ProtectedRoute, UnauthorizedPage } from './components/auth';
 import { AuthProvider } from './context/AuthContext';
 import {
   Home,
@@ -54,6 +54,7 @@ function App() {
               <Route path="cookies" element={<Cookies />} />
               <Route path="dmca" element={<DMCA />} />
               <Route path="2257" element={<Compliance2257 />} />
+              <Route path="unauthorized" element={<UnauthorizedPage />} />
             </Route>
             <Route
               path="/admin"

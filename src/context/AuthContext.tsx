@@ -1,11 +1,20 @@
 /**
- * Authentication Context - Production Grade
+ * Authentication Context - Production Grade with RBAC
  */
 
-import { createContext, useContext, useEffect, useState, useCallback, useRef } from 'react';
+import { createContext, useContext, useEffect, useState, useCallback, useRef, useMemo } from 'react';
 import type { User, Session } from '@supabase/supabase-js';
 import { authService, type SignInCredentials } from '../services/auth.service';
 import { isSupabaseConfigured } from '../lib/supabase';
+import {
+  type Role,
+  type Permission,
+  getRoleFromUser,
+  getRolePermissions,
+  hasPermissionByRole,
+  isRoleAtLeast,
+  isSuperAdminRole as checkIsSuperAdmin,
+} from '../lib/rbac';
 
 interface NotificationState {
   message: string;
@@ -24,6 +33,14 @@ interface AuthContextType {
   refreshSession: () => Promise<void>;
   notification: NotificationState | null;
   clearNotification: () => void;
+  role: Role;
+  permissions: Permission[];
+  hasPermission: (permission: Permission) => boolean;
+  hasAnyPermission: (permissions: Permission[]) => boolean;
+  hasAllPermissions: (permissions: Permission[]) => boolean;
+  hasRole: (role: Role) => boolean;
+  isAtLeast: (minimumRole: Role) => boolean;
+  isSuperAdmin: boolean;
 }
 
 const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
@@ -298,6 +315,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
     setNotification({ message: 'You have been signed out', type: 'info' });
   }, [signOut]);
 
+  const role = useMemo(() => getRoleFromUser(user), [user]);
+  const permissions = useMemo(() => getRolePermissions(role), [role]);
+  const isSuperAdmin = useMemo(() => checkIsSuperAdmin(role), [role]);
+
+  const hasPermission = useCallback(
+    (permission: Permission) => hasPermissionByRole(role, permission),
+    [role]
+  );
+
+  const hasAnyPermission = useCallback(
+    (requiredPermissions: Permission[]) => requiredPermissions.some((p) => hasPermissionByRole(role, p)),
+    [role]
+  );
+
+  const hasAllPermissions = useCallback(
+    (requiredPermissions: Permission[]) => requiredPermissions.every((p) => hasPermissionByRole(role, p)),
+    [role]
+  );
+
+  const hasRole = useCallback(
+    (requiredRole: Role) => role === requiredRole,
+    [role]
+  );
+
+  const isAtLeast = useCallback(
+    (minimumRole: Role) => isRoleAtLeast(role, minimumRole),
+    [role]
+  );
+
   const value: AuthContextType = {
     user,
     session,
@@ -310,6 +356,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     refreshSession,
     notification,
     clearNotification,
+    role,
+    permissions,
+    hasPermission,
+    hasAnyPermission,
+    hasAllPermissions,
+    hasRole,
+    isAtLeast,
+    isSuperAdmin,
   };
 
   return (

@@ -1,5 +1,5 @@
 /**
- * Admin Sidebar Component
+ * Admin Sidebar Component with RBAC
  */
 
 import { NavLink, useNavigate } from 'react-router-dom';
@@ -15,8 +15,17 @@ import {
   User,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { type Permission, ROUTE_PERMISSIONS } from '../../lib/rbac';
 
-const navItems = [
+interface NavItem {
+  to: string;
+  icon: React.ElementType;
+  label: string;
+  end?: boolean;
+  permission?: Permission;
+}
+
+const allNavItems: NavItem[] = [
   { to: '/admin', icon: LayoutDashboard, label: 'Dashboard', end: true },
   { to: '/admin/gallery', icon: Image, label: 'Gallery' },
   { to: '/admin/journal', icon: FileText, label: 'Journal' },
@@ -32,13 +41,20 @@ interface SidebarProps {
 }
 
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
-  const { signOut } = useAuth();
+  const { signOut, hasPermission } = useAuth();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
   };
+
+  const visibleNavItems = allNavItems.filter((item) => {
+    if (item.label === 'Profile') return true;
+    const permission = ROUTE_PERMISSIONS[item.to];
+    if (permission) return hasPermission(permission);
+    return true;
+  });
 
   return (
     <aside
@@ -61,7 +77,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
         <nav className="flex-1 py-4">
           <ul className="space-y-1">
-            {navItems.map((item) => (
+            {visibleNavItems.map((item) => (
               <li key={item.to}>
                 <NavLink
                   to={item.to}
