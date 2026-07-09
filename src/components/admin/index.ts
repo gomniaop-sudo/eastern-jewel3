@@ -7,3 +7,4 @@ export { LoadingCard } from './LoadingCard';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Notification } from './Notification';
 export { GalleryForm } from './GalleryForm';
+export { JournalForm } from './JournalForm';
