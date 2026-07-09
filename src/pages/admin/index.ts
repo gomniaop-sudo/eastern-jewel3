@@ -5,3 +5,4 @@ export { MessagesManager } from './MessagesManager';
 export { NewsletterManager } from './NewsletterManager';
 export { SettingsManager } from './SettingsManager';
 export { ProfileManager } from './ProfileManager';
+export { MediaLibrary } from './MediaLibrary';

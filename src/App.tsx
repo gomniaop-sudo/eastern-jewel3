@@ -27,6 +27,7 @@ import {
   NewsletterManager,
   SettingsManager,
   ProfileManager,
+  MediaLibrary,
 } from './pages/admin';
 import './i18n';
 
@@ -69,6 +70,7 @@ function App() {
               <Route path="journal" element={<JournalManager />} />
               <Route path="messages" element={<MessagesManager />} />
               <Route path="newsletter" element={<NewsletterManager />} />
+              <Route path="media" element={<MediaLibrary />} />
               <Route path="settings" element={<SettingsManager />} />
               <Route path="profile" element={<ProfileManager />} />
             </Route>

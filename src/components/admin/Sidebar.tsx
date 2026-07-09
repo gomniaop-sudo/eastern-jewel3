@@ -13,6 +13,7 @@ import {
   LogOut,
   ChevronLeft,
   User,
+  ImageIcon,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { type Permission, ROUTE_PERMISSIONS } from '../../lib/rbac';
@@ -31,6 +32,7 @@ const allNavItems: NavItem[] = [
   { to: '/admin/journal', icon: FileText, label: 'Journal' },
   { to: '/admin/messages', icon: Mail, label: 'Messages' },
   { to: '/admin/newsletter', icon: Users, label: 'Newsletter' },
+  { to: '/admin/media', icon: ImageIcon, label: 'Media Library' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
   { to: '/admin/profile', icon: User, label: 'Profile' },
 ];

@@ -11,3 +11,13 @@ export { contactService } from './contact.service';
 export type { ContactFilter, SubmitContactOptions } from './contact.service';
 export { settingsService } from './settings.service';
 export type { SettingsFilter, SettingsMap } from './settings.service';
+export { mediaService } from './media.service';
+export type {
+  MediaFolder,
+  UploadResult,
+  UploadProgress,
+  MediaFile,
+  MediaServiceError,
+  UploadOptions,
+  ListOptions,
+} from './media.service';

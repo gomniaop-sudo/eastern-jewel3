@@ -3,9 +3,9 @@
  */
 
 import { useState, useEffect } from 'react';
-import { Image, FileText, Users, Mail, Activity } from 'lucide-react';
+import { Image, FileText, Users, Mail, Activity, HardDrive } from 'lucide-react';
 import { StatCard, LoadingCard } from '../../components/admin';
-import { galleryService, journalService, newsletterService, contactService } from '../../services';
+import { galleryService, journalService, newsletterService, contactService, mediaService } from '../../services';
 import { isSupabaseConfigured } from '../../lib';
 
 interface DashboardStats {
@@ -13,6 +13,8 @@ interface DashboardStats {
   journalCount: number;
   subscriberCount: number;
   messageCount: number;
+  mediaCount: number;
+  storageUsed: number;
 }
 
 export function Dashboard() {
@@ -28,6 +30,8 @@ export function Dashboard() {
           journalCount: 6,
           subscriberCount: 128,
           messageCount: 24,
+          mediaCount: 45,
+          storageUsed: 12.5 * 1024 * 1024,
         });
         setLoading(false);
         return;
@@ -37,20 +41,24 @@ export function Dashboard() {
         setLoading(true);
         setError(null);
 
-        const [galleryItems, journalItems, subscriberCount, messageCount] = await Promise.all([
+        const [galleryItems, journalItems, subscriberCount, messageCount, mediaFiles] = await Promise.all([
           galleryService.getAll({ limit: 1000 }).catch(() => []),
           journalService.getAll({ limit: 1000 }).catch(() => []),
           newsletterService.getSubscriberCount().catch(() => 0),
           contactService.getUnreadCount().catch(() => 0),
+          mediaService.listImages({}).then((r) => r.data || []).catch(() => []),
         ]);
 
         const totalMessages = await contactService.getAll({ limit: 1000 }).catch(() => []);
+        const storageUsed = mediaFiles.reduce((sum, f) => sum + f.size, 0);
 
         setStats({
           galleryCount: galleryItems.length,
           journalCount: journalItems.length,
           subscriberCount,
           messageCount: messageCount + (totalMessages.length > 0 ? totalMessages.length - messageCount : 0),
+          mediaCount: mediaFiles.length,
+          storageUsed,
         });
       } catch (err) {
         console.error('Error fetching dashboard stats:', err);
@@ -60,6 +68,8 @@ export function Dashboard() {
           journalCount: 0,
           subscriberCount: 0,
           messageCount: 0,
+          mediaCount: 0,
+          storageUsed: 0,
         });
       } finally {
         setLoading(false);
@@ -68,6 +78,12 @@ export function Dashboard() {
 
     fetchStats();
   }, []);
+
+  const formatStorage = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
 
   if (loading) {
     return <LoadingCard message="Loading dashboard statistics..." />;
@@ -104,6 +120,21 @@ export function Dashboard() {
           title="Messages"
           value={stats?.messageCount ?? 0}
           icon={Mail}
+          loading={false}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <StatCard
+          title="Media Files"
+          value={stats?.mediaCount ?? 0}
+          icon={Image}
+          loading={false}
+        />
+        <StatCard
+          title="Storage Used"
+          value={formatStorage(stats?.storageUsed ?? 0)}
+          icon={HardDrive}
           loading={false}
         />
       </div>

@@ -20,7 +20,11 @@ export type Permission =
   | 'newsletter.manage'
   | 'settings.view'
   | 'settings.edit'
-  | 'users.manage';
+  | 'users.manage'
+  | 'media.view'
+  | 'media.upload'
+  | 'media.edit'
+  | 'media.delete';
 
 export interface RoleConfig {
   name: string;
@@ -51,6 +55,10 @@ export const ROLES: Record<Role, RoleConfig> = {
       'settings.view',
       'settings.edit',
       'users.manage',
+      'media.view',
+      'media.upload',
+      'media.edit',
+      'media.delete',
     ],
   },
   admin: {
@@ -73,6 +81,10 @@ export const ROLES: Record<Role, RoleConfig> = {
       'newsletter.manage',
       'settings.view',
       'settings.edit',
+      'media.view',
+      'media.upload',
+      'media.edit',
+      'media.delete',
     ],
   },
   editor: {
@@ -89,6 +101,9 @@ export const ROLES: Record<Role, RoleConfig> = {
       'journal.edit',
       'messages.view',
       'newsletter.view',
+      'media.view',
+      'media.upload',
+      'media.edit',
     ],
   },
   moderator: {
@@ -102,6 +117,7 @@ export const ROLES: Record<Role, RoleConfig> = {
       'messages.view',
       'messages.manage',
       'newsletter.view',
+      'media.view',
     ],
   },
   viewer: {
@@ -115,6 +131,7 @@ export const ROLES: Record<Role, RoleConfig> = {
       'messages.view',
       'newsletter.view',
       'settings.view',
+      'media.view',
     ],
   },
 };
@@ -136,6 +153,10 @@ export const PERMISSION_LABELS: Record<Permission, string> = {
   'settings.view': 'View Settings',
   'settings.edit': 'Edit Settings',
   'users.manage': 'Manage Users',
+  'media.view': 'View Media Library',
+  'media.upload': 'Upload Media',
+  'media.edit': 'Edit Media',
+  'media.delete': 'Delete Media',
 };
 
 export const ROLE_HIERARCHY: Role[] = ['super_admin', 'admin', 'editor', 'moderator', 'viewer'];
@@ -189,6 +210,7 @@ export const ROUTE_PERMISSIONS: Record<string, Permission> = {
   '/admin/newsletter': 'newsletter.view',
   '/admin/settings': 'settings.view',
   '/admin/profile': 'dashboard.view',
+  '/admin/media': 'media.view',
 };
 
 export const ACTION_PERMISSIONS = {
@@ -214,5 +236,10 @@ export const ACTION_PERMISSIONS = {
   },
   users: {
     manage: 'users.manage' as Permission,
+  },
+  media: {
+    upload: 'media.upload' as Permission,
+    edit: 'media.edit' as Permission,
+    delete: 'media.delete' as Permission,
   },
 };

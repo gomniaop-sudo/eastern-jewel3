@@ -9,3 +9,6 @@ export { Notification } from './Notification';
 export { GalleryForm } from './GalleryForm';
 export { JournalForm } from './JournalForm';
 export { PermissionButton, PermissionGuard } from './PermissionButton';
+export { MediaCard } from './MediaCard';
+export { MediaPreview } from './MediaPreview';
+export { MediaUploadDropzone } from './MediaUploadDropzone';

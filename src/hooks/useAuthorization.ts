@@ -161,6 +161,10 @@ export function usePermissionLabel(permission: Permission): string {
       'settings.view': 'View Settings',
       'settings.edit': 'Edit Settings',
       'users.manage': 'Manage Users',
+      'media.view': 'View Media Library',
+      'media.upload': 'Upload Media',
+      'media.edit': 'Edit Media',
+      'media.delete': 'Delete Media',
     };
     return labels[permission] || permission;
   }, [permission]);

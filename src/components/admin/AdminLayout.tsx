@@ -13,6 +13,7 @@ const pageTitles: Record<string, string> = {
   '/admin/journal': 'Journal Manager',
   '/admin/messages': 'Messages',
   '/admin/newsletter': 'Newsletter',
+  '/admin/media': 'Media Library',
   '/admin/settings': 'Settings',
   '/admin/profile': 'Profile',
 };
