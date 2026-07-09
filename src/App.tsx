@@ -3,6 +3,9 @@ import { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { useTranslation } from 'react-i18next';
 import { Layout } from './components/layout';
+import { AdminLayout } from './components/admin';
+import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import { AuthProvider } from './context/AuthContext';
 import {
   Home,
   About,
@@ -16,6 +19,14 @@ import {
   DMCA,
   Compliance2257,
 } from './pages';
+import {
+  Dashboard,
+  GalleryManager,
+  JournalManager,
+  MessagesManager,
+  NewsletterManager,
+  SettingsManager,
+} from './pages/admin';
 import './i18n';
 
 function App() {
@@ -28,21 +39,38 @@ function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={<Home />} />
-            <Route path="about" element={<About />} />
-            <Route path="gallery" element={<Gallery />} />
-            <Route path="premium" element={<Premium />} />
-            <Route path="journal" element={<Journal />} />
-            <Route path="contact" element={<Contact />} />
-            <Route path="privacy" element={<Privacy />} />
-            <Route path="terms" element={<Terms />} />
-            <Route path="cookies" element={<Cookies />} />
-            <Route path="dmca" element={<DMCA />} />
-            <Route path="2257" element={<Compliance2257 />} />
-          </Route>
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="gallery" element={<Gallery />} />
+              <Route path="premium" element={<Premium />} />
+              <Route path="journal" element={<Journal />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="privacy" element={<Privacy />} />
+              <Route path="terms" element={<Terms />} />
+              <Route path="cookies" element={<Cookies />} />
+              <Route path="dmca" element={<DMCA />} />
+              <Route path="2257" element={<Compliance2257 />} />
+            </Route>
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<Dashboard />} />
+              <Route path="gallery" element={<GalleryManager />} />
+              <Route path="journal" element={<JournalManager />} />
+              <Route path="messages" element={<MessagesManager />} />
+              <Route path="newsletter" element={<NewsletterManager />} />
+              <Route path="settings" element={<SettingsManager />} />
+            </Route>
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </HelmetProvider>
   );

@@ -1,3 +1,5 @@
+export { authService } from './auth.service';
+export type { AuthResponse, SignInCredentials } from './auth.service';
 export { galleryService, galleryCategoriesService } from './gallery.service';
 export type { GalleryItemWithCategory, GalleryFilter } from './gallery.service';
 export { journalService } from './journal.service';
