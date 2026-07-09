@@ -2,7 +2,7 @@
  * Confirm Dialog Component
  */
 
-import { AlertTriangle, X } from 'lucide-react';
+import { TriangleAlert as AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ConfirmDialogProps {

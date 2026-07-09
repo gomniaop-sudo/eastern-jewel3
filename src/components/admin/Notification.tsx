@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, AlertCircle, X } from 'lucide-react';
+import { CircleCheck as CheckCircle, Circle as XCircle, CircleAlert as AlertCircle, X } from 'lucide-react';
 
 type NotificationType = 'success' | 'error' | 'warning' | 'info';
 

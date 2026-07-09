@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Loader2, Bold, Italic, List, ListOrdered, Link2, Quote, Heading2, Eye } from 'lucide-react';
+import { X, Loader as Loader2, Bold, Italic, List, ListOrdered, Link2, Quote, Heading2, Eye } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { JournalEntryRow } from '../../lib/database.types';
 
