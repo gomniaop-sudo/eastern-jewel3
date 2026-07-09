@@ -1,11 +1,19 @@
 /**
- * Journal Form Component with Rich Text Editor
+ * Journal Form Component with Professional Rich Text Editor
  */
 
-import { useState, useEffect, useRef } from 'react';
-import { X, Loader as Loader2, Bold, Italic, List, ListOrdered, Link2, Quote, Heading2, Eye } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Loader as Loader2, AlertCircle, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { JournalEntryRow } from '../../lib/database.types';
+import {
+  RichTextEditor,
+  createDraftKey,
+  saveDraft,
+  restoreDraft,
+  clearDraft,
+} from './RichTextEditor';
+import { MediaSelectorModal } from './MediaSelectorModal';
 
 interface JournalFormData {
   title_en: string;
@@ -53,132 +61,40 @@ interface FormErrors {
   content_en?: string;
 }
 
-interface RichTextEditorProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  dir?: 'ltr' | 'rtl';
-}
-
-function RichTextEditor({ value, onChange, placeholder, dir = 'ltr' }: RichTextEditorProps) {
-  const editorRef = useRef<HTMLTextAreaElement>(null);
-
-  const insertFormat = (before: string, after: string = before) => {
-    const textarea = editorRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = value.substring(start, end);
-    const newText = value.substring(0, start) + before + selectedText + after + value.substring(end);
-
-    onChange(newText);
-
-    setTimeout(() => {
-      textarea.focus();
-      textarea.setSelectionRange(start + before.length, start + before.length + selectedText.length);
-    }, 0);
-  };
-
-  const toolbarButtons = [
-    { icon: Bold, action: () => insertFormat('**', '**'), title: 'Bold' },
-    { icon: Italic, action: () => insertFormat('*', '*'), title: 'Italic' },
-    { icon: Heading2, action: () => insertFormat('## '), title: 'Heading' },
-    { icon: List, action: () => insertFormat('- '), title: 'Bullet List' },
-    { icon: ListOrdered, action: () => insertFormat('1. '), title: 'Numbered List' },
-    { icon: Quote, action: () => insertFormat('> '), title: 'Quote' },
-    { icon: Link2, action: () => insertFormat('[', '](url)'), title: 'Link' },
-  ];
-
-  return (
-    <div className="border border-luxury-light/20 rounded-sm overflow-hidden">
-      <div className="flex items-center gap-1 p-2 bg-luxury-light/10 border-b border-luxury-light/20">
-        {toolbarButtons.map((btn, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={btn.action}
-            title={btn.title}
-            className="p-1.5 hover:bg-luxury-light/20 rounded text-gray-400 hover:text-white transition-colors"
-          >
-            <btn.icon className="w-4 h-4" />
-          </button>
-        ))}
-      </div>
-      <textarea
-        ref={editorRef}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        dir={dir}
-        placeholder={placeholder}
-        rows={12}
-        className="w-full px-3 py-2 bg-luxury-light/5 text-white placeholder-gray-500 focus:outline-none resize-none font-mono text-sm"
-      />
-    </div>
-  );
-}
-
-interface PreviewModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  content: string;
-  title: string;
-}
-
-function PreviewModal({ isOpen, onClose, content, title }: PreviewModalProps) {
-  if (!isOpen) return null;
-
-  const renderContent = (text: string) => {
-    return text
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-      .replace(/^## (.*$)/gm, '<h2 class="text-xl font-display text-white mt-4 mb-2">$1</h2>')
-      .replace(/^- (.*$)/gm, '<li class="text-gray-300 ml-4">$1</li>')
-      .replace(/^(\d+)\. (.*$)/gm, '<li class="text-gray-300 ml-4">$2</li>')
-      .replace(/^> (.*$)/gm, '<blockquote class="border-l-2 border-gold-500 pl-4 text-gray-400 italic my-2">$1</blockquote>')
-      .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" class="text-gold-400 hover:underline">$1</a>')
-      .replace(/\n/g, '<br />');
-  };
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.95, opacity: 0 }}
-        className="bg-luxury-black border border-luxury-light/20 rounded-sm w-full max-w-3xl max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between p-4 border-b border-luxury-light/20">
-          <h3 className="text-lg font-display text-white">Preview: {title || 'Untitled'}</h3>
-          <button onClick={onClose} className="p-2 hover:bg-luxury-light/10 rounded-sm text-gray-400 hover:text-white">
-            <X className="w-5 h-5" />
-          </button>
-        </div>
-        <div className="p-6 prose prose-invert max-w-none">
-          <div
-            dangerouslySetInnerHTML={{ __html: renderContent(content) }}
-            className="text-gray-300 leading-relaxed"
-          />
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
 export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loading, onCheckSlug }: JournalFormProps) {
   const [formData, setFormData] = useState<JournalFormData>(initialFormData);
   const [errors, setErrors] = useState<FormErrors>({});
   const [slugManuallyEdited, setSlugManuallyEdited] = useState(false);
-  const [previewOpen, setPreviewOpen] = useState(false);
   const [slugChecking, setSlugChecking] = useState(false);
   const [slugValid, setSlugValid] = useState<boolean | null>(null);
+  const [showMediaSelector, setShowMediaSelector] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  const draftKey = item?.id || 'new';
+
+  const handleSaveDraftEN = useCallback(
+    (value: string) => {
+      saveDraft(createDraftKey('content_en', draftKey), value);
+    },
+    [draftKey]
+  );
+
+  const handleRestoreDraftEN = useCallback(() => {
+    return restoreDraft(createDraftKey('content_en', draftKey));
+  }, [draftKey]);
+
+  const handleSaveDraftAR = useCallback(
+    (value: string) => {
+      saveDraft(createDraftKey('content_ar', draftKey), value);
+    },
+    [draftKey]
+  );
+
+  const handleRestoreDraftAR = useCallback(() => {
+    return restoreDraft(createDraftKey('content_ar', draftKey));
+  }, [draftKey]);
 
   useEffect(() => {
     if (item) {
@@ -204,6 +120,8 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
     }
     setErrors({});
     setSlugValid(null);
+    setImageError(false);
+    setNotification(null);
   }, [item, isOpen]);
 
   const generateSlug = (title: string) => {
@@ -246,13 +164,41 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
     }
 
     setErrors(newErrors);
+
+    if (Object.keys(newErrors).length > 0) {
+      setNotification({
+        type: 'error',
+        message: Object.values(newErrors).join('. '),
+      });
+      setTimeout(() => setNotification(null), 4000);
+    }
+
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!(await validate())) return;
-    await onSubmit(formData);
+
+    setSubmitting(true);
+    try {
+      clearDraft(createDraftKey('content_en', draftKey));
+      clearDraft(createDraftKey('content_ar', draftKey));
+      await onSubmit(formData);
+      setNotification({ type: 'success', message: 'Article saved successfully!' });
+      setTimeout(() => {
+        setNotification(null);
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setNotification({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to save article',
+      });
+      setTimeout(() => setNotification(null), 4000);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (field: keyof JournalFormData, value: string | boolean) => {
@@ -264,6 +210,27 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
       setSlugManuallyEdited(true);
       setSlugValid(null);
     }
+  };
+
+  const handleMediaSelect = (result: {
+    publicUrl: string;
+    fullPath: string;
+    name: string;
+    folder: string;
+    size: number;
+    mimeType: string;
+  }) => {
+    setFormData((prev) => ({ ...prev, image_url: result.publicUrl }));
+    setImageError(false);
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, image_url: '' }));
+    setImageError(false);
+  };
+
+  const handleImageError = () => {
+    setImageError(true);
   };
 
   return (
@@ -280,19 +247,37 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
             initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
-            className="bg-luxury-black border border-luxury-light/20 rounded-sm w-full max-w-4xl max-h-[90vh] overflow-y-auto"
+            className="bg-luxury-black border border-luxury-light/20 rounded-sm w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between p-4 border-b border-luxury-light/20 sticky top-0 bg-luxury-black z-10">
+            <div className="flex items-center justify-between p-4 border-b border-luxury-light/20 bg-luxury-black z-10 shrink-0">
               <h3 className="text-lg font-display text-white">
                 {item ? 'Edit Article' : 'Create Article'}
               </h3>
-              <button onClick={onClose} className="p-2 hover:bg-luxury-light/10 rounded-sm text-gray-400 hover:text-white">
+              <button
+                onClick={onClose}
+                className="p-2 hover:bg-luxury-light/10 rounded-sm text-gray-400 hover:text-white"
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-4 space-y-6">
+            {notification && (
+              <motion.div
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className={`flex items-center gap-2 px-4 py-3 ${
+                  notification.type === 'success'
+                    ? 'bg-green-500/10 text-green-400 border-b border-green-500/20'
+                    : 'bg-red-500/10 text-red-400 border-b border-red-500/20'
+                }`}
+              >
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                <span className="text-sm">{notification.message}</span>
+              </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-4 space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm text-gray-400 mb-1">
@@ -368,23 +353,17 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm text-gray-400">
-                    Content (English) <span className="text-red-500">*</span>
-                  </label>
-                  <button
-                    type="button"
-                    onClick={() => setPreviewOpen(true)}
-                    className="text-xs text-gold-400 hover:text-gold-300 flex items-center gap-1"
-                  >
-                    <Eye className="w-3 h-3" />
-                    Preview
-                  </button>
-                </div>
+                <label className="block text-sm text-gray-400 mb-1">
+                  Content (English) <span className="text-red-500">*</span>
+                </label>
                 <RichTextEditor
                   value={formData.content_en}
                   onChange={(value) => handleChange('content_en', value)}
                   placeholder="Write your article content using Markdown..."
+                  dir="ltr"
+                  language="en"
+                  onSaveDraft={handleSaveDraftEN}
+                  onRestoreDraft={handleRestoreDraftEN}
                 />
                 {errors.content_en && <p className="text-red-500 text-xs mt-1">{errors.content_en}</p>}
               </div>
@@ -395,23 +374,62 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
                   value={formData.content_ar}
                   onChange={(value) => handleChange('content_ar', value)}
                   dir="rtl"
+                  language="ar"
                   placeholder="اكتب محتوى المقال..."
+                  onSaveDraft={handleSaveDraftAR}
+                  onRestoreDraft={handleRestoreDraftAR}
                 />
               </div>
 
               <div>
-                <label className="block text-sm text-gray-400 mb-1">Featured Image URL</label>
-                <input
-                  type="url"
-                  value={formData.image_url}
-                  onChange={(e) => handleChange('image_url', e.target.value)}
-                  className="w-full px-3 py-2 bg-luxury-light/10 border border-luxury-light/20 rounded-sm text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-gold-500"
-                  placeholder="https://images.pexels.com/..."
-                />
-                {formData.image_url && (
-                  <div className="mt-2 aspect-video rounded-sm overflow-hidden bg-luxury-light/10">
-                    <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <label className="block text-sm text-gray-400 mb-1">Featured Image</label>
+                {formData.image_url && !imageError ? (
+                  <div className="relative">
+                    <div className="aspect-video rounded-sm overflow-hidden bg-luxury-light/10 border border-luxury-light/20">
+                      <img
+                        src={formData.image_url}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={handleImageError}
+                      />
+                    </div>
+                    <div className="absolute top-2 right-2 flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowMediaSelector(true)}
+                        className="p-2 bg-luxury-black/80 hover:bg-luxury-light/20 rounded-sm text-gray-300 hover:text-white transition-colors"
+                        title="Replace image"
+                      >
+                        <ImageIcon className="w-4 h-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="p-2 bg-luxury-black/80 hover:bg-red-500/20 rounded-sm text-gray-300 hover:text-red-400 transition-colors"
+                        title="Remove image"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowMediaSelector(true)}
+                    className={`w-full aspect-video border-2 border-dashed rounded-sm flex flex-col items-center justify-center gap-2 transition-colors ${
+                      imageError && formData.image_url
+                        ? 'border-red-500 bg-red-500/5'
+                        : 'border-luxury-light/30 hover:border-gold-500/50 hover:bg-gold-500/5'
+                    }`}
+                  >
+                    <ImageIcon className="w-8 h-8 text-gray-500" />
+                    <span className="text-gray-400 text-sm">Choose Featured Image</span>
+                  </button>
+                )}
+                {imageError && formData.image_url && (
+                  <p className="text-yellow-500 text-xs mt-1">
+                    Image could not be loaded. Click to select a different image.
+                  </p>
                 )}
               </div>
 
@@ -464,31 +482,32 @@ export function JournalForm({ isOpen, onClose, onSubmit, item, categories, loadi
                 </label>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-4 border-t border-luxury-light/20 sticky bottom-0 bg-luxury-black py-4 -mx-4 px-4">
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-luxury-light/20 bg-luxury-black py-4 -mx-4 px-4 sticky bottom-0">
                 <button
                   type="button"
                   onClick={onClose}
-                  disabled={loading}
+                  disabled={loading || submitting}
                   className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-luxury-light/10 rounded-sm transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  disabled={loading || slugChecking}
+                  disabled={loading || submitting || slugChecking}
                   className="px-6 py-2 text-sm font-medium bg-gold-500 hover:bg-gold-400 text-luxury-black rounded-sm transition-colors disabled:opacity-50 flex items-center gap-2"
                 >
-                  {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                  {(loading || submitting) && <Loader2 className="w-4 h-4 animate-spin" />}
                   {item ? 'Update' : 'Create'}
                 </button>
               </div>
             </form>
 
-            <PreviewModal
-              isOpen={previewOpen}
-              onClose={() => setPreviewOpen(false)}
-              content={formData.content_en}
-              title={formData.title_en}
+            <MediaSelectorModal
+              isOpen={showMediaSelector}
+              onClose={() => setShowMediaSelector(false)}
+              onSelect={handleMediaSelect}
+              defaultFolder="journal"
+              title="Select Featured Image"
             />
           </motion.div>
         </motion.div>

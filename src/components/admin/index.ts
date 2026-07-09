@@ -12,3 +12,5 @@ export { PermissionButton, PermissionGuard } from './PermissionButton';
 export { MediaCard } from './MediaCard';
 export { MediaPreview } from './MediaPreview';
 export { MediaUploadDropzone } from './MediaUploadDropzone';
+export { RichTextEditor } from './RichTextEditor';
+export { MediaSelectorModal } from './MediaSelectorModal';
