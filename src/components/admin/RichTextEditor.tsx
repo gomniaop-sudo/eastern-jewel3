@@ -4,27 +4,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  Heading1,
-  Heading2,
-  Heading3,
-  Bold,
-  Italic,
-  Underline,
-  Quote,
-  List,
-  ListOrdered,
-  Minus,
-  Code,
-  Code2,
-  Link2,
-  Image,
-  AlertCircle,
-  Eye,
-  Edit3,
-  Columns,
-  Save,
-} from 'lucide-react';
+import { Heading1, Heading2, Heading3, Bold, Italic, Underline, Quote, List, ListOrdered, Minus, Code, Code as Code2, Link2, Image, CircleAlert as AlertCircle, Eye, CreditCard as Edit3, Columns2 as Columns, Save } from 'lucide-react';
 
 interface RichTextEditorProps {
   value: string;
