@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { Search, X, Clock, TrendingUp, Image as ImageIcon, FileText, Loader2 } from 'lucide-react';
+import { Search, X, Clock, TrendingUp, Image as ImageIcon, FileText, Loader as Loader2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { searchService, type Suggestion } from '../../services/search.service';

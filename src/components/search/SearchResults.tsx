@@ -5,7 +5,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Lock, Image as ImageIcon, FileText, AlertCircle, RefreshCw, SortAsc } from 'lucide-react';
+import { Lock, Image as ImageIcon, FileText, CircleAlert as AlertCircle, RefreshCw, ListSortAscending as SortAsc } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { searchService, type SearchResult } from '../../services/search.service';
 import { siteConfig } from '../../config';
