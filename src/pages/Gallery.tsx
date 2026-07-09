@@ -186,19 +186,19 @@ const Gallery = () => {
           ) : (
             <>
               {loading && (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <Loader2 className="w-10 h-10 text-gold-500 animate-spin mb-4" />
+                <div className="flex flex-col items-center justify-center py-20" role="status" aria-live="polite">
+                  <Loader2 className="w-10 h-10 text-gold-500 animate-spin mb-4" aria-hidden="true" />
                   <p className="text-gray-400">{t('common.loading')}</p>
                 </div>
               )}
 
               {error && (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <AlertCircle className="w-10 h-10 text-red-500 mb-4" />
+                <div className="flex flex-col items-center justify-center py-20" role="alert" aria-live="assertive">
+                  <AlertCircle className="w-10 h-10 text-red-500 mb-4" aria-hidden="true" />
                   <p className="text-red-400 mb-2">{error}</p>
                   <button
                     onClick={() => window.location.reload()}
-                    className="text-gold-500 hover:text-gold-400 underline"
+                    className="text-gold-500 hover:text-gold-400 underline focus:outline-none focus:ring-2 focus:ring-gold-500 rounded px-2"
                   >
                     {t('common.retry')}
                   </button>
@@ -206,8 +206,8 @@ const Gallery = () => {
               )}
 
               {!loading && !error && items.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-20">
-                  <ImageOff className="w-10 h-10 text-gray-500 mb-4" />
+                <div className="flex flex-col items-center justify-center py-20" role="status">
+                  <ImageOff className="w-10 h-10 text-gray-500 mb-4" aria-hidden="true" />
                   <p className="text-gray-400">{t('gallery.empty')}</p>
                 </div>
               )}
@@ -218,12 +218,15 @@ const Gallery = () => {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="flex flex-wrap justify-center gap-2 md:gap-4 mb-12"
+                    role="group"
+                    aria-label={t('gallery.category_filter', 'Filter by category')}
                   >
                     {categories.map((category) => (
                       <button
                         key={category.id}
                         onClick={() => setActiveCategory(category.id)}
-                        className={`px-4 py-2 text-sm font-medium rounded-sm transition-all duration-300 ${
+                        aria-pressed={activeCategory === category.id}
+                        className={`px-4 py-2 text-sm font-medium rounded-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-gold-500 ${
                           activeCategory === category.id
                             ? 'bg-gold-500 text-luxury-black'
                             : 'bg-luxury-light text-gray-400 hover:text-white hover:bg-luxury-gray'
@@ -234,7 +237,7 @@ const Gallery = () => {
                     ))}
                   </motion.div>
 
-                  <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
+                  <motion.div layout className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6" role="list" aria-label={t('gallery.items_list', 'Gallery items')}>
                     <AnimatePresence mode="popLayout">
                       {searchFilteredItems.map((item, index) => (
                         <motion.div
@@ -245,7 +248,8 @@ const Gallery = () => {
                           exit={{ opacity: 0, scale: 0.9 }}
                           transition={{ duration: 0.4, delay: index * 0.05 }}
                           onClick={() => setSelectedImage(item)}
-                          className="group relative aspect-[3/4] overflow-hidden rounded-sm cursor-pointer"
+                          className="group relative aspect-[3/4] overflow-hidden rounded-sm cursor-pointer focus-within:ring-2 focus-within:ring-gold-500"
+                          role="listitem"
                         >
                           <img
                             src={getItemImage(item)}
@@ -254,12 +258,12 @@ const Gallery = () => {
                             loading="lazy"
                           />
 
-                          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="absolute inset-0 bg-gradient-to-t from-luxury-black via-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" aria-hidden="true" />
 
                           {getItemIsPremium(item) && (
-                            <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-gold-500 text-xs">
-                              <Lock className="w-3 h-3" />
-                              <span>Premium</span>
+                            <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-3 py-1 rounded-full flex items-center gap-1 text-gold-500 text-xs" aria-label={t('gallery.premium_content', 'Premium content')}>
+                              <Lock className="w-3 h-3" aria-hidden="true" />
+                              <span>{t('gallery.premium', 'Premium')}</span>
                             </div>
                           )}
 
@@ -268,7 +272,7 @@ const Gallery = () => {
                             <p className="text-gray-400 text-sm">{getItemDescription(item)}</p>
                           </div>
 
-                          <div className="absolute inset-0 border border-gold-500/0 group-hover:border-gold-500/50 rounded-sm transition-all duration-500" />
+                          <div className="absolute inset-0 border border-gold-500/0 group-hover:border-gold-500/50 rounded-sm transition-all duration-500" aria-hidden="true" />
                         </motion.div>
                       ))}
                     </AnimatePresence>
@@ -288,13 +292,17 @@ const Gallery = () => {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-luxury-black/95 backdrop-blur-lg p-4"
             onClick={() => setSelectedImage(null)}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="lightbox-title"
+            aria-describedby="lightbox-description"
           >
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 md:top-8 md:right-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10"
-              aria-label="Close"
+              className="absolute top-4 right-4 md:top-8 md:right-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-gold-500"
+              aria-label={t('accessibility.close')}
             >
-              <X className="w-6 h-6" />
+              <X className="w-6 h-6" aria-hidden="true" />
             </button>
 
             {currentIndex > 0 && (
@@ -303,10 +311,10 @@ const Gallery = () => {
                   e.stopPropagation();
                   handlePrevious();
                 }}
-                className="absolute left-4 md:left-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10"
-                aria-label="Previous"
+                className="absolute left-4 md:left-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                aria-label={t('accessibility.previous')}
               >
-                <ChevronLeft className="w-6 h-6" />
+                <ChevronLeft className="w-6 h-6" aria-hidden="true" />
               </button>
             )}
 
@@ -316,10 +324,10 @@ const Gallery = () => {
                   e.stopPropagation();
                   handleNext();
                 }}
-                className="absolute right-4 md:right-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10"
-                aria-label="Next"
+                className="absolute right-4 md:right-8 w-12 h-12 rounded-full bg-luxury-light hover:bg-gold-500 text-white hover:text-luxury-black flex items-center justify-center transition-colors z-10 focus:outline-none focus:ring-2 focus:ring-gold-500"
+                aria-label={t('accessibility.next')}
               >
-                <ChevronRight className="w-6 h-6" />
+                <ChevronRight className="w-6 h-6" aria-hidden="true" />
               </button>
             )}
 
@@ -337,15 +345,15 @@ const Gallery = () => {
               />
 
               {getItemIsPremium(selectedImage) && (
-                <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 text-gold-500">
-                  <Lock className="w-4 h-4" />
-                  <span className="text-sm">Premium Content</span>
+                <div className="absolute top-4 right-4 bg-luxury-black/80 backdrop-blur-sm px-4 py-2 rounded-full flex items-center gap-2 text-gold-500" aria-label={t('gallery.premium_content', 'Premium content')}>
+                  <Lock className="w-4 h-4" aria-hidden="true" />
+                  <span className="text-sm">{t('gallery.premium', 'Premium')}</span>
                 </div>
               )}
 
               <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-luxury-black to-transparent">
-                <h3 className="text-white text-2xl font-display mb-2">{getItemTitle(selectedImage)}</h3>
-                <p className="text-gray-300">{getItemDescription(selectedImage)}</p>
+                <h3 id="lightbox-title" className="text-white text-2xl font-display mb-2">{getItemTitle(selectedImage)}</h3>
+                <p id="lightbox-description" className="text-gray-300">{getItemDescription(selectedImage)}</p>
               </div>
             </motion.div>
           </motion.div>

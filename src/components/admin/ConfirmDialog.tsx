@@ -2,6 +2,7 @@
  * Confirm Dialog Component
  */
 
+import { useEffect, useRef } from 'react';
 import { TriangleAlert as AlertTriangle, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -28,10 +29,30 @@ export function ConfirmDialog({
   onCancel,
   loading,
 }: ConfirmDialogProps) {
+  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          onCancel();
+        }
+      };
+      document.addEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = 'hidden';
+      cancelButtonRef.current?.focus();
+      return () => {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.body.style.overflow = '';
+      };
+    }
+  }, [isOpen, onCancel]);
+
   const variantStyles = {
     danger: 'bg-red-500 hover:bg-red-600',
     warning: 'bg-yellow-500 hover:bg-yellow-600 text-luxury-black',
-    info: 'bg-gold-500 hover:bg-gold-600 text-luxury-black',
+    info: 'bg-gold-500 hover:bg-gold-400 text-luxury-black',
   };
 
   return (
@@ -43,6 +64,10 @@ export function ConfirmDialog({
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
           onClick={onCancel}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="confirm-dialog-title"
+          aria-describedby="confirm-dialog-message"
         >
           <motion.div
             initial={{ scale: 0.95, opacity: 0 }}
@@ -60,34 +85,38 @@ export function ConfirmDialog({
                   <AlertTriangle className={`w-5 h-5 ${
                     variant === 'danger' ? 'text-red-500' :
                     variant === 'warning' ? 'text-yellow-500' : 'text-gold-500'
-                  }`} />
+                  }`} aria-hidden="true" />
                 </div>
-                <h3 className="text-lg font-display text-white">{title}</h3>
+                <h3 id="confirm-dialog-title" className="text-lg font-display text-white">{title}</h3>
               </div>
               <button
+                ref={cancelButtonRef}
                 onClick={onCancel}
-                className="p-1 hover:bg-luxury-light/10 rounded-sm transition-colors text-gray-400 hover:text-white"
+                className="p-1 hover:bg-luxury-light/10 rounded-sm transition-colors text-gray-400 hover:text-white focus:outline-none focus:ring-2 focus:ring-gold-500"
+                aria-label="Close dialog"
               >
-                <X className="w-5 h-5" />
+                <X className="w-5 h-5" aria-hidden="true" />
               </button>
             </div>
 
             <div className="p-4">
-              <p className="text-gray-400 text-sm">{message}</p>
+              <p id="confirm-dialog-message" className="text-gray-400 text-sm">{message}</p>
             </div>
 
             <div className="flex items-center justify-end gap-3 p-4 border-t border-luxury-light/20">
               <button
                 onClick={onCancel}
                 disabled={loading}
-                className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-luxury-light/10 rounded-sm transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white hover:bg-luxury-light/10 rounded-sm transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gold-500"
               >
                 {cancelLabel}
               </button>
               <button
+                ref={confirmButtonRef}
                 onClick={onConfirm}
                 disabled={loading}
-                className={`px-4 py-2 text-sm font-medium rounded-sm transition-colors disabled:opacity-50 ${variantStyles[variant]}`}
+                aria-busy={loading}
+                className={`px-4 py-2 text-sm font-medium rounded-sm transition-colors disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-gold-500 ${variantStyles[variant]}`}
               >
                 {loading ? 'Processing...' : confirmLabel}
               </button>

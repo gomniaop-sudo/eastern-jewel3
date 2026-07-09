@@ -41,13 +41,14 @@ const Navbar = () => {
 
   return (
     <header
+      role="banner"
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
         scrolled ? 'bg-luxury-black/95 backdrop-blur-md shadow-lg' : 'bg-transparent'
       }`}
     >
-      <nav className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <nav className="container mx-auto px-4 sm:px-6 lg:px-8" aria-label={t('accessibility.main_navigation', 'Main navigation')}>
         <div className="flex items-center justify-between h-16 md:h-20">
-          <Link to="/" className="flex items-center gap-2">
+          <Link to="/" className="flex items-center gap-2" aria-label={t('accessibility.home_link', 'Eastern Jewel Home')}>
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -58,35 +59,38 @@ const Navbar = () => {
             </motion.div>
           </Link>
 
-          <div className="hidden md:flex items-center gap-8">
+          <ul className="hidden md:flex items-center gap-8" role="list">
             {navLinks.map((link) => (
-              <Link
-                key={link.path}
-                to={link.path}
-                className={`relative text-sm font-medium transition-colors duration-300 ${
-                  location.pathname === link.path
-                    ? 'text-gold-500'
-                    : 'text-gray-300 hover:text-white'
-                }`}
-              >
-                {link.label}
-                {location.pathname === link.path && (
-                  <motion.div
-                    layoutId="navIndicator"
-                    className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold-500"
-                  />
-                )}
-              </Link>
+              <li key={link.path}>
+                <Link
+                  to={link.path}
+                  className={`relative text-sm font-medium transition-colors duration-300 ${
+                    location.pathname === link.path
+                      ? 'text-gold-500'
+                      : 'text-gray-300 hover:text-white'
+                  }`}
+                  aria-current={location.pathname === link.path ? 'page' : undefined}
+                >
+                  {link.label}
+                  {location.pathname === link.path && (
+                    <motion.div
+                      layoutId="navIndicator"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gold-500"
+                    />
+                  )}
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
 
           <div className="hidden md:flex items-center gap-4">
             <button
               onClick={toggleLanguage}
               className="flex items-center gap-2 text-gray-300 hover:text-gold-500 transition-colors"
-              aria-label={t('accessibility.language')}
+              aria-label={t('accessibility.switch_language', 'Switch language')}
+              aria-pressed={i18n.language === 'ar'}
             >
-              <Globe size={18} />
+              <Globe size={18} aria-hidden="true" />
               <span className="text-sm font-medium">
                 {i18n.language === 'en' ? 'العربية' : 'English'}
               </span>
@@ -102,8 +106,10 @@ const Navbar = () => {
             onClick={() => setIsOpen(!isOpen)}
             className="md:hidden text-white p-2"
             aria-label={t('accessibility.toggle_menu')}
+            aria-expanded={isOpen}
+            aria-controls="mobile-menu"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </button>
         </div>
       </nav>
@@ -111,14 +117,17 @@ const Navbar = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
+            id="mobile-menu"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
             className="md:hidden bg-luxury-dark border-t border-luxury-border"
+            role="navigation"
+            aria-label={t('accessibility.mobile_menu', 'Mobile menu')}
           >
-            <div className="container mx-auto px-4 py-4">
+            <ul className="container mx-auto px-4 py-4" role="list">
               {navLinks.map((link, index) => (
-                <motion.div
+                <motion.li
                   key={link.path}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -131,17 +140,19 @@ const Navbar = () => {
                         ? 'text-gold-500'
                         : 'text-gray-300 hover:text-white'
                     }`}
+                    aria-current={location.pathname === link.path ? 'page' : undefined}
                   >
                     {link.label}
                   </Link>
-                </motion.div>
+                </motion.li>
               ))}
-              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-luxury-border">
+              <li className="flex items-center gap-4 mt-4 pt-4 border-t border-luxury-border">
                 <button
                   onClick={toggleLanguage}
                   className="flex items-center gap-2 text-gray-300 hover:text-gold-500 transition-colors"
+                  aria-label={t('accessibility.switch_language', 'Switch language')}
                 >
-                  <Globe size={18} />
+                  <Globe size={18} aria-hidden="true" />
                   <span>{i18n.language === 'en' ? 'العربية' : 'English'}</span>
                 </button>
                 <Link to="/premium" className="flex-1">
@@ -149,8 +160,8 @@ const Navbar = () => {
                     {t('nav.premium')}
                   </Button>
                 </Link>
-              </div>
-            </div>
+              </li>
+            </ul>
           </motion.div>
         )}
       </AnimatePresence>

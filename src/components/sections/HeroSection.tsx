@@ -9,11 +9,13 @@ const HeroSection = () => {
   const { t } = useTranslation();
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-luxury-black via-luxury-dark/50 to-luxury-black" />
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden" aria-labelledby="hero-title">
+      <div className="absolute inset-0 bg-gradient-to-b from-luxury-black via-luxury-dark/50 to-luxury-black" aria-hidden="true" />
       <div
         className="absolute inset-0 bg-cover bg-center opacity-20"
         style={{ backgroundImage: `url('${heroContent.background.image}')` }}
+        role="img"
+        aria-label={t('hero.background_alt', 'Luxury background image')}
       />
 
       <Container className="relative z-10 text-center">
@@ -24,19 +26,20 @@ const HeroSection = () => {
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-luxury-light/50 backdrop-blur-sm border border-gold-500/20 mb-8">
-            <Sparkles className="w-4 h-4 text-gold-500" />
-            <span className="text-sm text-gold-500">Exclusive Collection</span>
+            <Sparkles className="w-4 h-4 text-gold-500" aria-hidden="true" />
+            <span className="text-sm text-gold-500">{t('hero.badge', 'Exclusive Collection')}</span>
           </div>
         </motion.div>
 
         <motion.h1
+          id="hero-title"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl text-white mb-6 leading-tight"
         >
-          <span className="block">Eastern</span>
-          <span className="block text-gold-500">Jewel</span>
+          <span className="block">{t('hero.name_first', 'Eastern')}</span>
+          <span className="block text-gold-500">{t('hero.name_second', 'Jewel')}</span>
         </motion.h1>
 
         <motion.p
@@ -62,6 +65,8 @@ const HeroSection = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.6 }}
           className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6"
+          role="group"
+          aria-label={t('accessibility.hero_actions', 'Primary actions')}
         >
           <Link to="/gallery">
             <Button variant="primary" size="lg">
@@ -81,6 +86,7 @@ const HeroSection = () => {
         animate={{ opacity: 1 }}
         transition={{ delay: 1.5, duration: 0.5 }}
         className="absolute bottom-8 left-1/2 -translate-x-1/2"
+        aria-hidden="true"
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}
@@ -90,7 +96,7 @@ const HeroSection = () => {
         </motion.div>
       </motion.div>
 
-      <div className="absolute inset-0 bg-gradient-to-r from-gold-500/5 via-transparent to-gold-500/5 pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-r from-gold-500/5 via-transparent to-gold-500/5 pointer-events-none" aria-hidden="true" />
     </section>
   );
 };

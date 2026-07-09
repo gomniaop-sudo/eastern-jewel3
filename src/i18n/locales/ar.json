@@ -101,12 +101,53 @@
     "compliance": "امتثال 2257"
   },
   "accessibility": {
-    "skip": "تخطى إلى المحتوى الرئيسي",
+    "skip": "تخطي إلى المحتوى الرئيسي",
     "language": "اللغة",
-    "toggle_menu": "تبديل القائمة"
+    "toggle_menu": "تبديل القائمة",
+    "main_navigation": "التنقل الرئيسي",
+    "mobile_menu": "قائمة الجوال",
+    "home_link": "جوهرة الشرق الرئيسية",
+    "main_content": "المحتوى الرئيسي",
+    "social_links": "روابط التواصل الاجتماعي",
+    "social_link": "زيارة صفحة {{site}}",
+    "switch_language": "تبديل اللغة",
+    "close": "إغلاق",
+    "loading": "جاري التحميل",
+    "error": "خطأ",
+    "success": "نجاح",
+    "previous": "السابق",
+    "next": "التالي",
+    "required_field": "حقل مطلوب"
   },
   "common": {
     "loading": "جاري التحميل...",
-    "retry": "حاول مرة أخرى"
+    "retry": "حاول مرة أخرى",
+    "error": "حدث خطأ",
+    "success": "نجاح",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "save": "حفظ",
+    "delete": "حذف",
+    "edit": "تعديل",
+    "view": "عرض",
+    "close": "إغلاق",
+    "search": "بحث",
+    "clear": "مسح",
+    "submit": "إرسال"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "لوحة التحكم",
+      "gallery": "المعرض",
+      "journal": "المجلة",
+      "messages": "الرسائل",
+      "newsletter": "النشرة",
+      "media": "مكتبة الوسائط",
+      "settings": "الإعدادات",
+      "profile": "الملف الشخصي"
+    },
+    "sign_out": "تسجيل الخروج",
+    "collapse_sidebar": "طي الشريط الجانبي",
+    "expand_sidebar": "توسيع الشريط الجانبي"
   }
 }

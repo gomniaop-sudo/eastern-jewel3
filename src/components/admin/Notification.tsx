@@ -29,6 +29,13 @@ const colorMap = {
   info: 'bg-blue-500/10 border-blue-500/20 text-blue-400',
 };
 
+const roleMap = {
+  success: 'status',
+  error: 'alert',
+  warning: 'alert',
+  info: 'status',
+};
+
 export function Notification({ message, type = 'success', duration = 4000, onClose }: NotificationProps) {
   const [visible, setVisible] = useState(true);
   const Icon = iconMap[type];
@@ -48,12 +55,19 @@ export function Notification({ message, type = 'success', duration = 4000, onClo
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -20 }}
+          role={roleMap[type]}
+          aria-live={type === 'error' || type === 'warning' ? 'assertive' : 'polite'}
+          aria-atomic="true"
           className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-sm border backdrop-blur-sm ${colorMap[type]} flex items-center gap-3`}
         >
-          <Icon className="w-5 h-5 flex-shrink-0" />
+          <Icon className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
           <span className="text-sm">{message}</span>
-          <button onClick={() => setVisible(false)} className="ml-2 hover:opacity-70">
-            <X className="w-4 h-4" />
+          <button
+            onClick={() => setVisible(false)}
+            className="ml-2 hover:opacity-70 focus:outline-none focus:ring-2 focus:ring-white/50 rounded"
+            aria-label="Dismiss notification"
+          >
+            <X className="w-4 h-4" aria-hidden="true" />
           </button>
         </motion.div>
       )}

@@ -7,13 +7,17 @@ interface ButtonProps {
   children?: ReactNode;
   className?: string;
   disabled?: boolean;
+  loading?: boolean;
   type?: 'button' | 'submit' | 'reset';
   onClick?: () => void;
+  'aria-label'?: string;
+  'aria-busy'?: boolean;
+  'aria-labelledby'?: string;
 }
 
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className = '', variant = 'primary', size = 'md', children, ...props }, ref) => {
-    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-sm';
+  ({ className = '', variant = 'primary', size = 'md', children, loading, disabled, type = 'button', onClick, ...props }, ref) => {
+    const baseStyles = 'inline-flex items-center justify-center font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed rounded-sm focus:outline-none focus:ring-2 focus:ring-gold-500 focus:ring-offset-2 focus:ring-offset-luxury-black';
 
     const variants = {
       primary: 'bg-luxury-gold text-luxury-black hover:bg-luxury-gold-light active:bg-luxury-gold-dark',
@@ -31,11 +35,17 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <motion.button
         ref={ref}
+        type={type}
+        onClick={onClick}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
         className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${className}`}
-        {...props}
+        disabled={disabled || loading}
+        aria-busy={loading}
+        aria-label={props['aria-label']}
+        aria-labelledby={props['aria-labelledby']}
       >
+        {loading ? <span className="sr-only">{props['aria-label'] || 'Loading...'}</span> : null}
         {children}
       </motion.button>
     );

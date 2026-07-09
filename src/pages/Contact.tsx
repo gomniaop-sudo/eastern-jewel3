@@ -84,12 +84,12 @@ const Contact = () => {
               viewport={{ once: true }}
             >
               {submitted ? (
-                <div className="bg-luxury-dark border border-gold-500 rounded-sm p-8 text-center">
+                <div className="bg-luxury-dark border border-gold-500 rounded-sm p-8 text-center" role="status" aria-live="polite">
                   <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-500/20 flex items-center justify-center">
-                    <Send className="w-8 h-8 text-green-500" />
+                    <Send className="w-8 h-8 text-green-500" aria-hidden="true" />
                   </div>
                   <h3 className="text-xl font-display text-white mb-2">Message Sent!</h3>
-                  <p className="text-gray-400">{t('contact.form.success')}</p>
+                  <p className="text-gray-400">{t('contact_form.success')}</p>
                   <Button
                     variant="ghost"
                     onClick={() => setSubmitted(false)}
@@ -99,9 +99,9 @@ const Contact = () => {
                   </Button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
+                <form onSubmit={handleSubmit} className="space-y-6" noValidate>
                   {error && (
-                    <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded-sm">
+                    <div className="bg-red-500/20 border border-red-500 text-red-400 px-4 py-3 rounded-sm" role="alert" aria-live="assertive">
                       {error}
                     </div>
                   )}
@@ -113,6 +113,8 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
+                    aria-required="true"
+                    autoComplete="name"
                   />
 
                   <Input
@@ -123,6 +125,8 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
+                    aria-required="true"
+                    autoComplete="email"
                   />
 
                   <Input
@@ -141,6 +145,7 @@ const Contact = () => {
                     onChange={handleChange}
                     rows={5}
                     required
+                    aria-required="true"
                   />
 
                   <Button type="submit" variant="primary" className="w-full">

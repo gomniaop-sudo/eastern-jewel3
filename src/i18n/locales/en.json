@@ -103,10 +103,51 @@
   "accessibility": {
     "skip": "Skip to main content",
     "language": "Language",
-    "toggle_menu": "Toggle menu"
+    "toggle_menu": "Toggle menu",
+    "main_navigation": "Main navigation",
+    "mobile_menu": "Mobile menu",
+    "home_link": "Eastern Jewel Home",
+    "main_content": "Main content",
+    "social_links": "Social links",
+    "social_link": "Visit our {{site}} page",
+    "switch_language": "Switch language",
+    "close": "Close",
+    "loading": "Loading",
+    "error": "Error",
+    "success": "Success",
+    "previous": "Previous",
+    "next": "Next",
+    "required_field": "Required field"
   },
   "common": {
     "loading": "Loading...",
-    "retry": "Try Again"
+    "retry": "Try Again",
+    "error": "An error occurred",
+    "success": "Success",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "close": "Close",
+    "search": "Search",
+    "clear": "Clear",
+    "submit": "Submit"
+  },
+  "admin": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "gallery": "Gallery",
+      "journal": "Journal",
+      "messages": "Messages",
+      "newsletter": "Newsletter",
+      "media": "Media Library",
+      "settings": "Settings",
+      "profile": "Profile"
+    },
+    "sign_out": "Sign Out",
+    "collapse_sidebar": "Collapse sidebar",
+    "expand_sidebar": "Expand sidebar"
   }
 }

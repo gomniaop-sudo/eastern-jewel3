@@ -48,6 +48,15 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
+/* RTL Support */
+[dir="rtl"] {
+  text-align: right;
+}
+
+[dir="ltr"] {
+  text-align: left;
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -79,6 +88,34 @@ html[dir="rtl"] body {
   outline-offset: 2px;
 }
 
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* High contrast focus for buttons and interactive elements */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--color-luxury-gold);
+  outline-offset: 2px;
+}
+
+/* Screen reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 /* Skip Link */
 .skip-link {
   position: absolute;
@@ -89,18 +126,39 @@ html[dir="rtl"] body {
   padding: 8px 16px;
   z-index: 100;
   transition: top 0.3s;
+  text-decoration: none;
+  font-weight: 500;
 }
 
 .skip-link:focus {
   top: 0;
 }
 
+[dir="rtl"] .skip-link {
+  left: auto;
+  right: 0;
+}
+
 /* Smooth animations for reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-framer-component-type] {
+    transform: none !important;
+  }
+}
+
+/* Support for users who prefer reduced data */
+@media (prefers-reduced-data: reduce) {
+  img {
+    content-visibility: auto;
   }
 }
 
@@ -110,4 +168,52 @@ html[dir="rtl"] body {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Ensure images have proper alt text styling */
+img[alt=""] {
+  /* Decorative images */
+}
+
+/* Table accessibility */
+table {
+  border-collapse: collapse;
+}
+
+th {
+  text-align: left;
+}
+
+[dir="rtl"] th {
+  text-align: right;
+}
+
+/* Form accessibility - visible focus for all inputs */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Loading state accessibility */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+/* Error state styling */
+[aria-invalid="true"] {
+  border-color: #ef4444;
+}
+
+/* Visually hidden but accessible to screen readers */
+[aria-hidden="true"] {
+  text-decoration: none;
 }

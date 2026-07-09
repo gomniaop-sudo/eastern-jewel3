@@ -35,13 +35,15 @@ const Premium = () => {
             {t('premium.description')}
           </motion.p>
 
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto" role="list" aria-label={t('premium.pricing_plans', 'Pricing plans')}>
             {premiumTiers.map((tier, index) => (
-              <motion.div
+              <motion.article
                 key={index}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
+                role="listitem"
+                aria-labelledby={`tier-title-${index}`}
                 className={`relative rounded-sm ${
                   tier.popular
                     ? 'bg-gradient-to-b from-gold-500/10 via-luxury-dark to-luxury-dark border-2 border-gold-500'
@@ -49,24 +51,24 @@ const Premium = () => {
                 }`}
               >
                 {tier.popular && (
-                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gold-500 text-luxury-black px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1">
-                    <Star className="w-4 h-4 fill-current" />
+                  <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gold-500 text-luxury-black px-4 py-1 rounded-full text-sm font-medium flex items-center gap-1" aria-label={t('premium.most_popular', 'Most popular')}>
+                    <Star className="w-4 h-4 fill-current" aria-hidden="true" />
                     {i18n.language === 'ar' ? popularBadge.ar : popularBadge.en}
                   </div>
                 )}
 
                 <div className="p-8">
-                  <h3 className="text-2xl font-display text-white mb-2">
+                  <h3 id={`tier-title-${index}`} className="text-2xl font-display text-white mb-2">
                     {i18n.language === 'ar' ? tier.name.ar : tier.name.en}
                   </h3>
-                  <div className="text-4xl font-bold text-gold-500 mb-6">
+                  <div className="text-4xl font-bold text-gold-500 mb-6" aria-label={t('premium.price', { price: i18n.language === 'ar' ? tier.price.ar : tier.price.en })}>
                     {i18n.language === 'ar' ? tier.price.ar : tier.price.en}
                   </div>
 
-                  <ul className="space-y-4 mb-8">
+                  <ul className="space-y-4 mb-8" aria-label={t('premium.features_included', 'Features included')}>
                     {tier.features.map((feature, findex) => (
                       <li key={findex} className="flex items-start gap-3">
-                        <Check className="w-5 h-5 text-gold-500 flex-shrink-0 mt-0.5" />
+                        <Check className="w-5 h-5 text-gold-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
                         <span className="text-gray-300">
                           {i18n.language === 'ar' ? feature.ar : feature.en}
                         </span>
@@ -77,36 +79,38 @@ const Premium = () => {
                   <Button
                     variant={tier.popular ? 'primary' : 'outline'}
                     className="w-full"
+                    aria-label={t('premium.select_plan', { plan: i18n.language === 'ar' ? tier.name.ar : tier.name.en })}
                   >
                     {t('premium.cta')}
                   </Button>
                 </div>
-              </motion.div>
+              </motion.article>
             ))}
           </div>
 
-          <motion.div
+          <motion.section
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             className="mt-20"
+            aria-labelledby="features-heading"
           >
-            <h3 className="text-2xl font-display text-white text-center mb-12">
+            <h3 id="features-heading" className="text-2xl font-display text-white text-center mb-12">
               {i18n.language === 'ar' ? whatsIncludedHeading.ar : whatsIncludedHeading.en}
             </h3>
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {premiumFeatures.map((feature, index) => {
                 const IconComponent = iconMap[feature.icon];
                 return (
-                  <motion.div
+                  <motion.article
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.1 }}
-                    className="p-6 bg-luxury-dark border border-luxury-border rounded-sm hover:border-gold-500/30 transition-all text-center"
+                    className="p-6 bg-luxury-dark border border-luxury-border rounded-sm hover:border-gold-500/30 transition-all text-center focus-within:ring-2 focus-within:ring-gold-500"
                   >
-                    <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-luxury-light flex items-center justify-center">
+                    <div className="w-12 h-12 mx-auto mb-4 rounded-full bg-luxury-light flex items-center justify-center" aria-hidden="true">
                       {IconComponent && <IconComponent className="w-6 h-6 text-gold-500" />}
                     </div>
                     <h4 className="text-lg font-display text-white mb-2">
@@ -115,11 +119,11 @@ const Premium = () => {
                     <p className="text-gray-400 text-sm">
                       {i18n.language === 'ar' ? feature.description.ar : feature.description.en}
                     </p>
-                  </motion.div>
+                  </motion.article>
                 );
               })}
             </div>
-          </motion.div>
+          </motion.section>
         </Container>
       </Section>
     </>
