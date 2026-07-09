@@ -3,7 +3,7 @@
  */
 
 import { Link } from 'react-router-dom';
-import { ShieldX, ArrowLeft, Home } from 'lucide-react';
+import { ShieldX, ArrowLeft, Hop as Home } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 
