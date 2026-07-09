@@ -3,10 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus, Image, Search, ArrowUpDown, Edit2, Trash2,
-  Eye, EyeOff, Star, Lock, ChevronLeft, ChevronRight, X
-} from 'lucide-react';
+import { Plus, Image, Search, ArrowUpDown, CreditCard as Edit2, Trash2, Eye, EyeOff, Star, Lock, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import {
   EmptyState, LoadingCard, ConfirmDialog, Notification, GalleryForm
 } from '../../components/admin';

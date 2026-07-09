@@ -3,10 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import {
-  Plus, FileText, Search, ArrowUpDown, Edit2, Trash2,
-  Star, ChevronLeft, ChevronRight, X, ExternalLink
-} from 'lucide-react';
+import { Plus, FileText, Search, ArrowUpDown, CreditCard as Edit2, Trash2, Star, ChevronLeft, ChevronRight, X, ExternalLink } from 'lucide-react';
 import {
   EmptyState, LoadingCard, ConfirmDialog, Notification
 } from '../../components/admin';
