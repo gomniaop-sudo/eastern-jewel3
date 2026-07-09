@@ -14,6 +14,7 @@ const pageTitles: Record<string, string> = {
   '/admin/messages': 'Messages',
   '/admin/newsletter': 'Newsletter',
   '/admin/settings': 'Settings',
+  '/admin/profile': 'Profile',
 };
 
 export function AdminLayout() {

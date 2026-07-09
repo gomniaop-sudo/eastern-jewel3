@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   ChevronLeft,
+  User,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -22,6 +23,7 @@ const navItems = [
   { to: '/admin/messages', icon: Mail, label: 'Messages' },
   { to: '/admin/newsletter', icon: Users, label: 'Newsletter' },
   { to: '/admin/settings', icon: Settings, label: 'Settings' },
+  { to: '/admin/profile', icon: User, label: 'Profile' },
 ];
 
 interface SidebarProps {

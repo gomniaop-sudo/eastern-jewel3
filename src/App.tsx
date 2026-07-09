@@ -26,6 +26,7 @@ import {
   MessagesManager,
   NewsletterManager,
   SettingsManager,
+  ProfileManager,
 } from './pages/admin';
 import './i18n';
 
@@ -68,6 +69,7 @@ function App() {
               <Route path="messages" element={<MessagesManager />} />
               <Route path="newsletter" element={<NewsletterManager />} />
               <Route path="settings" element={<SettingsManager />} />
+              <Route path="profile" element={<ProfileManager />} />
             </Route>
           </Routes>
         </AuthProvider>
