@@ -16,6 +16,12 @@ export interface GalleryFilter {
   isActive?: boolean;
   limit?: number;
   offset?: number;
+  search?: string;
+  sortBy?: 'newest' | 'oldest';
+}
+
+export interface AdminGalleryFilter extends GalleryFilter {
+  includeInactive?: boolean;
 }
 
 const TABLE = 'gallery_items';
@@ -51,6 +57,64 @@ export const galleryService = {
     const { data, error } = await query;
     if (error) throw error;
     return data as GalleryItemWithCategory[];
+  },
+
+  async getAllAdmin(filters?: AdminGalleryFilter): Promise<GalleryItemWithCategory[]> {
+    let query = supabase
+      .from(TABLE)
+      .select('*, categories(*)', { count: 'exact' });
+
+    if (filters?.search) {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+    if (filters?.category && filters.category !== 'all') {
+      query = query.eq('category_id', filters.category);
+    }
+    if (filters?.isPremium !== undefined) {
+      query = query.eq('is_premium', filters.isPremium);
+    }
+    if (filters?.isActive !== undefined && !filters?.includeInactive) {
+      query = query.eq('is_active', filters.isActive);
+    } else if (!filters?.includeInactive) {
+      query = query.eq('is_active', true);
+    }
+
+    const sortAscending = filters?.sortBy === 'oldest';
+    query = query.order('created_at', { ascending: sortAscending });
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset && filters?.limit) {
+      query = query.range(filters.offset, filters.offset + filters.limit - 1);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data as GalleryItemWithCategory[];
+  },
+
+  async getCount(filters?: AdminGalleryFilter): Promise<number> {
+    let query = supabase.from(TABLE).select('*', { count: 'exact', head: true });
+
+    if (filters?.search) {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+    if (filters?.category && filters.category !== 'all') {
+      query = query.eq('category_id', filters.category);
+    }
+    if (filters?.isPremium !== undefined) {
+      query = query.eq('is_premium', filters.isPremium);
+    }
+    if (filters?.isActive !== undefined && !filters?.includeInactive) {
+      query = query.eq('is_active', filters.isActive);
+    } else if (!filters?.includeInactive) {
+      query = query.eq('is_active', true);
+    }
+
+    const { count, error } = await query;
+    if (error) throw error;
+    return count || 0;
   },
 
   async getById(id: string): Promise<GalleryItemWithCategory | null> {

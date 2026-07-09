@@ -5,3 +5,5 @@ export { StatCard } from './StatCard';
 export { EmptyState } from './EmptyState';
 export { LoadingCard } from './LoadingCard';
 export { ConfirmDialog } from './ConfirmDialog';
+export { Notification } from './Notification';
+export { GalleryForm } from './GalleryForm';
