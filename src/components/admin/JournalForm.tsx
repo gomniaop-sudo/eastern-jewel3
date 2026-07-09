@@ -3,7 +3,7 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { X, Loader as Loader2, AlertCircle, Image as ImageIcon, Trash2 } from 'lucide-react';
+import { X, Loader as Loader2, CircleAlert as AlertCircle, Image as ImageIcon, Trash2 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { JournalEntryRow } from '../../lib/database.types';
 import {

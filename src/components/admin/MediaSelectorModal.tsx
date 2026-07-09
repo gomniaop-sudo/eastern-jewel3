@@ -4,15 +4,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  X,
-  Search,
-  FolderOpen,
-  RefreshCw,
-  AlertCircle,
-  Image as ImageIcon,
-  Check,
-} from 'lucide-react';
+import { X, Search, FolderOpen, RefreshCw, CircleAlert as AlertCircle, Image as ImageIcon, Check } from 'lucide-react';
 import { mediaService, type MediaFile, type MediaFolder } from '../../services/media.service';
 
 interface MediaSelectorResult {
