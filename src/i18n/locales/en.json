@@ -31,6 +31,7 @@
     "title": "Gallery",
     "subtitle": "A Curated Collection of Elegance",
     "view_more": "View Collection",
+    "empty": "No gallery items available",
     "categories": {
       "all": "All",
       "portraits": "Portraits",
@@ -56,7 +57,8 @@
     "title": "Journal",
     "subtitle": "Stories Behind the Lens",
     "read_more": "Read More",
-    "latest": "Latest Entries"
+    "latest": "Latest Entries",
+    "empty": "No journal entries available"
   },
   "contact": {
     "title": "Contact Us",
@@ -102,5 +104,9 @@
     "skip": "Skip to main content",
     "language": "Language",
     "toggle_menu": "Toggle menu"
+  },
+  "common": {
+    "loading": "Loading...",
+    "retry": "Try Again"
   }
 }
