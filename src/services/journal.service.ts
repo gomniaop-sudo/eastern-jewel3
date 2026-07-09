@@ -14,6 +14,16 @@ export interface JournalFilter {
   tag?: string;
 }
 
+export interface AdminJournalFilter {
+  search?: string;
+  category?: string;
+  isPublished?: boolean;
+  isFeatured?: boolean;
+  sortBy?: 'newest' | 'oldest';
+  limit?: number;
+  offset?: number;
+}
+
 const TABLE = 'journal_entries';
 
 export const journalService = {
@@ -31,6 +41,65 @@ export const journalService = {
     const { data, error } = await query;
     if (error) throw error;
     return data as JournalEntryRow[];
+  },
+
+  async getAllAdmin(filters?: AdminJournalFilter): Promise<JournalEntryRow[]> {
+    let query = supabase.from(TABLE).select('*');
+
+    if (filters?.search) {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+    if (filters?.category && filters.category !== 'all') {
+      query = query.eq('category', filters.category);
+    }
+    if (filters?.isPublished !== undefined) {
+      query = query.eq('is_published', filters.isPublished);
+    }
+    if (filters?.isFeatured !== undefined) {
+      query = query.eq('is_featured', filters.isFeatured);
+    }
+
+    const sortAscending = filters?.sortBy === 'oldest';
+    query = query.order('created_at', { ascending: sortAscending });
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset && filters?.limit) {
+      query = query.range(filters.offset, filters.offset + filters.limit - 1);
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+    return data as JournalEntryRow[];
+  },
+
+  async getCount(filters?: AdminJournalFilter): Promise<number> {
+    let query = supabase.from(TABLE).select('*', { count: 'exact', head: true });
+
+    if (filters?.search) {
+      query = query.ilike('title', `%${filters.search}%`);
+    }
+    if (filters?.category && filters.category !== 'all') {
+      query = query.eq('category', filters.category);
+    }
+    if (filters?.isPublished !== undefined) {
+      query = query.eq('is_published', filters.isPublished);
+    }
+
+    const { count, error } = await query;
+    if (error) throw error;
+    return count || 0;
+  },
+
+  async checkSlugUnique(slug: string, excludeId?: string): Promise<boolean> {
+    let query = supabase.from(TABLE).select('id').eq('slug', slug);
+    if (excludeId) {
+      query = query.neq('id', excludeId);
+    }
+    const { data, error } = await query;
+    if (error) throw error;
+    return data.length === 0;
   },
 
   async getById(id: string): Promise<JournalEntryRow | null> {
