@@ -1,0 +1,358 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '22'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # QUALITY GATE: Validate + Test + Build
+  # ─────────────────────────────────────────────
+  quality:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      # ── Stage 1: Repository checkout ──────────
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ── Stage 2: Node.js setup ────────────────
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      # ── Stage 3: Install dependencies ─────────
+      - name: Install dependencies (clean install)
+        run: npm ci
+
+      # ── Stage 4: TypeScript validation ────────
+      - name: TypeScript type check
+        run: npx tsc --noEmit -p tsconfig.app.json
+
+      # ── Stage 5: Lint ─────────────────────────
+      - name: Lint validation (oxlint)
+        run: npm run lint
+
+      # ── Stage 6: Unit tests ───────────────────
+      - name: Run Vitest test suite
+        run: npx vitest run
+
+      # ── Stage 7: Coverage validation ──────────
+      - name: Coverage with threshold enforcement
+        run: npx vitest run --coverage
+
+      # ── Stage 8: Production build ─────────────
+      - name: Production build
+        run: npm run build
+
+      # ── Stage 9: Bundle analysis ──────────────
+      - name: Bundle analysis
+        run: |
+          mkdir -p bundle-analysis
+          echo "=== Bundle Sizes ===" | tee bundle-analysis/summary.txt
+          du -sh dist/assets/*.js 2>/dev/null | sort -rh | head -20 | tee -a bundle-analysis/summary.txt
+          echo "" | tee -a bundle-analysis/summary.txt
+          TOTAL=$(du -sh dist/ 2>/dev/null | cut -f1)
+          echo "Total dist size: $TOTAL" | tee -a bundle-analysis/summary.txt
+          # Check for large chunks (>600KB)
+          LARGE=$(find dist/assets -name "*.js" -size +600k 2>/dev/null)
+          if [ -n "$LARGE" ]; then
+            echo "WARNING: Large chunks detected:" | tee -a bundle-analysis/summary.txt
+            echo "$LARGE" | tee -a bundle-analysis/summary.txt
+          else
+            echo "OK: All chunks within size limits" | tee -a bundle-analysis/summary.txt
+          fi
+          # Verify code splitting
+          CHUNK_COUNT=$(ls dist/assets/*.js 2>/dev/null | wc -l)
+          echo "Number of JS chunks: $CHUNK_COUNT" | tee -a bundle-analysis/summary.txt
+          if [ "$CHUNK_COUNT" -lt 3 ]; then
+            echo "WARNING: Code splitting may not be working (only $CHUNK_COUNT chunks)" | tee -a bundle-analysis/summary.txt
+          else
+            echo "OK: Code splitting produces $CHUNK_COUNT chunks" | tee -a bundle-analysis/summary.txt
+          fi
+
+      # ── Stage 10: Security audit ──────────────
+      - name: Security audit (production deps)
+        run: npm audit --omit=dev --audit-level=critical
+
+      - name: Security audit (all deps, report only)
+        run: npm audit --audit-level=high 2>&1 | tee bundle-analysis/audit-full.txt || true
+        continue-on-error: true
+
+      # ── Artifacts: Coverage ───────────────────
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 30
+
+      # ── Artifacts: Test results ───────────────
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 30
+
+      # ── Artifacts: Build output ───────────────
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+      # ── Artifacts: Bundle analysis ────────────
+      - name: Upload bundle analysis
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-analysis
+          path: bundle-analysis/
+          retention-days: 30
+
+  # ─────────────────────────────────────────────
+  # CODE QUALITY: Static analysis
+  # ─────────────────────────────────────────────
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check for large files (>500 lines)
+        run: |
+          find src -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | sort -rn | head -20
+          LARGE_FILES=$(find src -name "*.ts" -o -name "*.tsx" | xargs wc -l 2>/dev/null | awk '$1 > 500 {print $2}')
+          if [ -n "$LARGE_FILES" ]; then
+            echo "WARNING: Large source files (>500 lines):" && echo "$LARGE_FILES"
+          else
+            echo "OK: No source files exceed 500 lines"
+          fi
+
+      - name: Check for debug statements
+        run: |
+          if grep -rn "debugger\|console\.log" src/ --include="*.ts" --include="*.tsx" 2>/dev/null | grep -v "node_modules\|tests\|logger.ts"; then
+            echo "WARNING: Debug statements found in source code"
+          else
+            echo "OK: No debug statements found"
+          fi
+
+      - name: Check environment variables not committed
+        run: |
+          if [ -f .env ]; then
+            if grep -q "^\.env$" .gitignore; then
+              echo "OK: .env is in .gitignore"
+            else
+              echo "WARNING: .env may not be in .gitignore"
+              exit 1
+            fi
+          fi
+          if [ ! -f .env.example ]; then
+            echo "WARNING: .env.example not found"
+          else
+            echo "OK: .env.example present"
+          fi
+
+      - name: Check for unused imports
+        run: |
+          # TypeScript with noUnusedLocals catches these during build
+          npx tsc --noEmit -p tsconfig.app.json 2>&1 | grep "is declared but" || echo "OK: No unused imports detected"
+
+      - name: Circular dependency check
+        run: |
+          npx --yes madge --circular --extensions ts,tsx src/ 2>&1 | tee circular-deps.txt || true
+          if grep -q "Found" circular-deps.txt 2>/dev/null; then
+            echo "WARNING: Circular dependencies detected"
+            cat circular-deps.txt
+          else
+            echo "OK: No circular dependencies found"
+          fi
+
+  # ─────────────────────────────────────────────
+  # SECURITY: Dependency + secret scanning
+  # ─────────────────────────────────────────────
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Dependency vulnerability audit (production)
+        run: |
+          echo "=== Production Dependency Audit ==="
+          npm audit --omit=dev --json > audit-prod.json || true
+          npm audit --omit=dev --audit-level=high 2>&1 | tee audit-summary.txt || true
+          # Fail on critical
+          npm audit --omit=dev --audit-level=critical
+
+      - name: Check for hardcoded secrets
+        run: |
+          if grep -rE "(password|secret|api_key|apikey|token)\s*=\s*['\"][a-zA-Z0-9]{20,}" src/ --include="*.ts" --include="*.tsx" 2>/dev/null; then
+            echo "ERROR: Potential hardcoded secret detected!"
+            exit 1
+          else
+            echo "OK: No hardcoded secrets detected"
+          fi
+
+      - name: Verify production configuration
+        run: |
+          # Check .env.example exists
+          if [ ! -f .env.example ]; then
+            echo "WARNING: .env.example not found"
+          else
+            echo "OK: .env.example present"
+          fi
+          # Verify .gitignore excludes .env
+          if grep -q "\.env" .gitignore; then
+            echo "OK: .env is excluded in .gitignore"
+          else
+            echo "WARNING: .env not found in .gitignore"
+          fi
+
+      - name: Upload security report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-report
+          path: |
+            audit-prod.json
+            audit-summary.txt
+          retention-days: 30
+
+  # ─────────────────────────────────────────────
+  # PERFORMANCE: Bundle validation
+  # ─────────────────────────────────────────────
+  performance:
+    name: Performance Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality]
+
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Validate code splitting
+        run: |
+          echo "=== Chunk Analysis ==="
+          ls -lh dist/assets/*.js 2>/dev/null | awk '{print $5, $9}'
+          CHUNK_COUNT=$(ls dist/assets/*.js 2>/dev/null | wc -l)
+          echo "Number of JS chunks: $CHUNK_COUNT"
+          if [ "$CHUNK_COUNT" -lt 3 ]; then
+            echo "WARNING: Only $CHUNK_COUNT JS chunks — code splitting may not be working"
+          else
+            echo "OK: Code splitting produces $CHUNK_COUNT chunks"
+          fi
+
+      - name: Check bundle sizes
+        run: |
+          TOTAL_GZIP=0
+          for f in dist/assets/*.js; do
+            SIZE=$(gzip -c "$f" | wc -c)
+            TOTAL_GZIP=$((TOTAL_GZIP + SIZE))
+            echo "$(basename $f): $(echo "$SIZE / 1024" | bc) KB gzipped"
+          done
+          TOTAL_KB=$((TOTAL_GZIP / 1024))
+          echo "Total gzipped JS: ${TOTAL_KB} KB"
+          if [ "$TOTAL_KB" -gt 500 ]; then
+            echo "WARNING: Total gzipped JS exceeds 500KB"
+          else
+            echo "OK: Total gzipped JS is within limits"
+          fi
+
+      - name: Verify lazy-loaded routes
+        run: |
+          for route in Dashboard GalleryManager JournalManager Messages Newsletter Settings MediaLibrary; do
+            LOWER=$(echo "$route" | tr '[:upper:]' '[:lower:]')
+            if ls dist/assets/ 2>/dev/null | grep -qi "$LOWER\|$route"; then
+              echo "OK: $route lazy chunk exists"
+            else
+              echo "INFO: $route may be bundled with another chunk"
+            fi
+          done
+
+      - name: Validate cache-busting hashes
+        run: |
+          HASHED=$(ls dist/assets/*.js 2>/dev/null | grep -cE "\-[a-zA-Z0-9]{8,}\." || echo 0)
+          if [ "$HASHED" -gt 0 ]; then
+            echo "OK: $HASHED files with cache-busting hashes detected"
+          else
+            echo "WARNING: No hashed filenames found"
+          fi
+
+  # ─────────────────────────────────────────────
+  # SUMMARY: Pipeline status report
+  # ─────────────────────────────────────────────
+  summary:
+    name: Pipeline Summary
+    runs-on: ubuntu-latest
+    needs: [quality, code-quality, security, performance]
+    if: always()
+
+    steps:
+      - name: Report pipeline result
+        run: |
+          echo "============================================"
+          echo "CI/CD PIPELINE SUMMARY"
+          echo "============================================"
+          echo "Quality Gate:       ${{ needs.quality.result }}"
+          echo "Code Quality:       ${{ needs.code-quality.result }}"
+          echo "Security Scan:      ${{ needs.security.result }}"
+          echo "Performance Check:  ${{ needs.performance.result }}"
+          echo "============================================"
+
+          if [ "${{ needs.quality.result }}" = "failure" ]; then
+            echo "PIPELINE FAILED: Quality gate did not pass"
+            exit 1
+          fi
+          if [ "${{ needs.security.result }}" = "failure" ]; then
+            echo "PIPELINE FAILED: Security scan failed"
+            exit 1
+          fi
+          echo "PIPELINE PASSED: All quality gates satisfied"
